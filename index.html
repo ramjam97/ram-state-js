@@ -16,6 +16,7 @@
         <button onclick="rCounter.set(d => d+1)">+</button>
         <span id="countText">0</span>
         <button onclick="rCounter.set(d => d-1)">-</button>
+        <button onclick="reset()">Clear</button>
     </span>
 
     <ul id="list"></ul>
@@ -31,6 +32,11 @@
 
     document.getElementById('input').addEventListener('keydown', (e) => rInput.set(e.target.value));
 
+    function reset() {
+        rCounter.set(0);
+        rInput.set('');
+    }
+
     rCounter.watch((newData, oldData) => {
         document.getElementById('countText').innerHTML = newData;
         rData.set(d => ({
@@ -42,6 +48,8 @@
     });
 
     rInput.watch(val => {
+
+        if (val == '') document.getElementById('input').value = '';
 
         document.getElementById('list').innerHTML = '';
 
