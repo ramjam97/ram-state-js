@@ -14,28 +14,28 @@ RamState is a lightweight JavaScript state management library that provides a si
 Create a new state instance with an initial value.
 
 ```javascript
-const useCounter = new RamState(0);
+const rCounter = new RamState(0);
 
 ```
 
 #### Setters
 Update the state directly or using a function.
 ```javascript
-useCounter.set(5);                 // Direct update
-useCounter.set(val => val + 5);    // Functional update
+rCounter.set(5);                 // Direct update
+rCounter.set(val => val + 5);    // Functional update
 ```
 
 #### Getters
 Retrieve the current state.
 ```javascript
-console.log(useCounter.get());    // Using method
-console.log(useCounter.value);    // Using property
+console.log(rCounter.get());    // Using method
+console.log(rCounter.value);    // Using property
 ```
 
 #### Side Effects
 Execute a function whenever the state changes.
 ```javascript
-useCounter.watch((newData, oldData) => {
+rCounter.watch((newData, oldData) => {
     // Execute side effects here
     console.log(`Counter changed from ${oldData} to ${newData}`);
 });
