@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RamState Simple Example</title>
+    <script src="/ram-state.min.js"></script>
+</head>
+
+<body>
+
+    <input type="text" id="input" placeholder="text1;text2;text3;">
+
+    <span>
+        <button onclick="rCounter.set(d => d+1)">+</button>
+        <span id="countText">0</span>
+        <button onclick="rCounter.set(d => d-1)">-</button>
+    </span>
+
+    <ul id="list"></ul>
+    <pre id="pre"></pre>
+
+</body>
+
+<script>
+
+    const rInput = new RamState('');  // input
+    const rCounter = new RamState(0); // counter
+    const rData = new RamState({}); // data object
+
+    document.getElementById('input').addEventListener('keydown', (e) => rInput.set(e.target.value));
+
+    rCounter.watch((newData, oldData) => {
+        document.getElementById('countText').innerHTML = newData;
+        rData.set(d => ({
+            ...d, ...{
+                counter: newData,
+                date: new Date()
+            }
+        }));
+    });
+
+    rInput.watch(val => {
+
+        document.getElementById('list').innerHTML = '';
+
+        val.split(';').forEach(txt => {
+            const li = document.createElement('li');
+            li.innerHTML = txt;
+            document.getElementById('list').appendChild(li);
+        });
+
+        rData.set(d => ({
+            ...d, ...{
+                input: val,
+                date: new Date()
+            }
+        }));
+
+    });
+
+    rData.watch(rev => {
+        document.getElementById('pre').innerHTML = JSON.stringify(rev, null, 2);
+    });
+
+</script>
+
+</html>
