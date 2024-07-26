@@ -42,9 +42,9 @@ rCounter.watch((newData, oldData) => {
 ```
 
 ### How to Add RamState to Your Project
-To add RamState to your project, you can simply download the ramstate.js file from the repository and include it in your project.
+To add RamState to your project, you can simply download the ram-state.min.js file from the repository and include it in your project.
 
-1. Download ramstate.js: 
+1. Download ram-state.min.js: 
 Download the file from the repository and place it in your project directory.
 
 2. Include RamState in Your Project:
