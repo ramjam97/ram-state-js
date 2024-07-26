@@ -1,5 +1,5 @@
 # RamState
-RamState is a lightweight JavaScript state management library that provides a simple and efficient way to manage and update state. It supports both direct and functional updates, offers easy state retrieval, and allows side effects to be triggered on state changes.
+RamState is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, and allows side effects to be triggered on state changes.
 
 
 ## Features
