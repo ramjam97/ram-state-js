@@ -33,16 +33,16 @@
 
     <script>
 
-        const rTaskList = new RamState([]);
+        const rTaskList = new RamState(['coding']);
 
         rTaskList.watch(list => {
             document.getElementById('taskList').innerHTML = list.map((item, i) => {
                 return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center">
-                    ${item}
+                    <span>${item}</span>
                     <button class="btn btn-danger" onclick="removeTask(${i})">x</button>
                 </li>`;
             }).join('');
-        });
+        }, true);
 
         document.getElementById('taskForm').addEventListener('submit', (e) => {
             e.preventDefault();

@@ -14,13 +14,13 @@
     <div class="container py-3">
         <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="min-height: 50vh;">
 
-            <h5>Counter: <span id="textCount">0</span></h5>
+            <h5>Counter: <span id="textCount"></span></h5>
 
             <span>
                 <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                     <button type="button" class="btn btn-info" onclick="rCounter.set(val => val + 1)">+</button>
                     <button type="button" class="btn btn-light fw-bold" id="countBtn" title="reset?"
-                        onclick="rCounter.set(0)">0</button>
+                        onclick="rCounter.set(0)"></button>
                     <button type="button" class="btn btn-danger" onclick="rCounter.set(val => val - 1)">-</button>
                 </div>
             </span>
@@ -34,7 +34,7 @@
         rCounter.watch((val) => {
             document.getElementById('countBtn').innerHTML = val;
             document.getElementById('textCount').innerHTML = val;
-        });
+        }, true);
 
     </script>
 </body>
