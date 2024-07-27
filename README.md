@@ -16,7 +16,6 @@ Create a new state instance with an initial value.
 
 ```javascript
 const rCounter = new RamState(0);
-
 ```
 
 #### Setters
@@ -36,13 +35,14 @@ console.log(rCounter.value);    // Using property
 #### Side Effects
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 ```javascript
-useCounter.watch((newData, oldData, version) => {
-    console.log(`Counter changed from ${oldData} to ${newData}, version: ${version}`);
+rCounter.watch((newData, oldData, version) => {
+    console.log(`Data changed from ${oldData} to ${newData}`);
+    console.log(`version: ${version}`);
 }, true); // The second parameter `true` will execute the callback immediately
 
 // Update the state
-useCounter.set(5);  // Logs: "Counter changed from 0 to 5, version: 1"
-useCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 2"
+rCounter.set(5);  // Logs: "Counter changed from 0 to 5, version: 1"
+rCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 2"
 ```
 
 ## Installation
