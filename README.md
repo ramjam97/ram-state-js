@@ -1,12 +1,13 @@
 # RamState
-RamState is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, and allows side effects to be triggered on state changes.
+RamState is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
 
 
 ## Features
 
-- Setters: Update state directly or using a function.
-- Getters: Retrieve the current state using a method or a property.
-- Side Effects: Execute functions whenever the state changes.
+- **Setters:** Update state directly or using a function.
+- **Getters:** Retrieve the current state using a method or a property.
+- **Side Effects:** Execute functions whenever the state changes.
+- **Version Tracking:** Track the version of the state with each update.
 
 
 ## Usage/Examples
@@ -33,12 +34,15 @@ console.log(rCounter.value);    // Using property
 ```
 
 #### Side Effects
-Execute a function whenever the state changes.
+Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 ```javascript
-rCounter.watch((newData, oldData) => {
-    // Execute side effects here
-    console.log(`Counter changed from ${oldData} to ${newData}`);
-});
+useCounter.watch((newData, oldData, version) => {
+    console.log(`Counter changed from ${oldData} to ${newData}, version: ${version}`);
+}, true); // The second parameter `true` will execute the callback immediately
+
+// Update the state
+useCounter.set(5);  // Logs: "Counter changed from 0 to 5, version: 1"
+useCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 2"
 ```
 
 ## Installation
