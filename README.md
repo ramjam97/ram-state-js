@@ -49,15 +49,12 @@ To add RamState to your project, you can simply download the ram-state.min.js fi
 Download the file from the repository and place it in your project directory.
 
 2. Include RamState in Your Project:
-Add the following script tag to your HTML file or import it into your JavaScript file.
+Add the following script tag to your HTML file.
 
 ```html
 <script src="path/to/ram-state.min.js"></script>
 ```
-or
-```javascript
-import RamState from './path/to/ram-state.min.js';
-```
+
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues and pull requests.
