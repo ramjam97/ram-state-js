@@ -15,18 +15,21 @@ RamStateJs is a lightweight state management library designed specifically for v
 Create a new state instance with an initial value.
 
 ```javascript
-const rArray = new RamState([]);
-const rObject = new RamState({});
-const rBoolean = new RamState(true);
+const rString = new RamState('');       // string
+const rInteger = new RamState(0);       // integer
+const rBoolean = new RamState(true);    // boolean
+const rArray = new RamState([]);        // array 
+const rObject = new RamState({});       // object
 ...
-const rCounter = new RamState(0);
+// instance variable counter as integer
+const rCounter = new RamState(0);       
 ```
 
 #### Setters
 Update the state directly or using a function.
 ```javascript
-rCounter.set(5);                 // Direct update
-rCounter.set(val => val + 5);    // Functional update
+rCounter.set(5);                    // Direct update
+rCounter.set(val => val + 5);       // Functional update
 ```
 
 #### Getters
