@@ -15,6 +15,10 @@ RamState is a lightweight state management library designed specifically for van
 Create a new state instance with an initial value.
 
 ```javascript
+const rArray = new RamState([]);
+const rObject = new RamState({});
+const rBoolean = new RamState(true);
+...
 const rCounter = new RamState(0);
 ```
 
@@ -35,10 +39,17 @@ console.log(rCounter.value);    // Using property
 #### Side Effects
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 ```javascript
+// With the second parameter
 rCounter.watch((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
 }, true); // The second parameter `true` will execute the callback immediately
+
+// Without the second parameter
+rCounter.watch((newData, oldData, version) => {
+    console.log(`Data changed from ${oldData} to ${newData}`);
+    console.log(`version: ${version}`);
+});
 
 // Update the state
 rCounter.set(5);  // Logs: "Counter changed from 0 to 5, version: 1"
