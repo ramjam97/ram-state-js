@@ -1,5 +1,5 @@
-# RamState
-RamState is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
+# RamStateJs
+RamStateJs is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
 
 
 ## Features
@@ -57,13 +57,13 @@ rCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 
 ```
 
 ## Installation
-#### How to Add RamState to Your Project
-To add RamState to your project, you can simply download the ram-state.min.js file from the repository and include it in your project.
+#### How to Add RamStateJs to Your Project
+To add RamStateJs to your project, you can simply download the ram-state.min.js file from the repository and include it in your project.
 
 1. Download ram-state.min.js: 
 Download the file from the repository and place it in your project directory.
 
-2. Include RamState in Your Project:
+2. Include RamStateJs in Your Project:
 Add the following script tag to your HTML file.
 
 ```html
