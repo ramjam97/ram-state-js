@@ -40,12 +40,14 @@ console.log(rCounter.value);    // Using property
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 ```javascript
 // With the second parameter
+// The second parameter `true` will execute the callback immediately
 rCounter.watch((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
-}, true); // The second parameter `true` will execute the callback immediately
+}, true); 
 
 // Without the second parameter
+// This will only execute the callback on subsequent state changes
 rCounter.watch((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
