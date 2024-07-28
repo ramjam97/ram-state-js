@@ -17,11 +17,9 @@ class RamState {
         this.#version = 0;
     }
 
-    set(newData) {
+    set(param) {
         const oldData = this.#data;
-        if (typeof newData === 'function') {
-            newData = newData(this.#deepClone(oldData));
-        }
+        const newData = typeof param === 'function' ? param(this.#deepClone(oldData)) : param;
         if (!this.#isEqual(oldData, newData)) {
             this.#version += 1;
             this.#data = this.#deepClone(newData);
