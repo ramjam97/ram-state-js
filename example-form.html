@@ -72,7 +72,7 @@
     <script>
         const rPerson = new RamState({});
 
-        rPerson.watch((data) => {
+        rPerson.watch(data => {
             document.getElementById('dataDisplay').innerHTML = JSON.stringify(data, null, 2);
         });
 
