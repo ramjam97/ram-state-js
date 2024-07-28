@@ -28,8 +28,8 @@ const rCounter = new RamState(0);
 #### Setters
 Update the state directly or using a function.
 ```javascript
-rCounter.set(5);                    // Direct update
-rCounter.set(val => val + 5);       // Functional update
+rCounter.set(5);                // Direct update
+rCounter.set(val => val + 5);   // Functional update
 ```
 
 #### Getters
@@ -57,7 +57,7 @@ rCounter.watch((newData, oldData, version) => {
 });
 
 // Update the state
-rCounter.set(5);  // Logs: "Counter changed from 0 to 5, version: 1"
+rCounter.set(5);               // Logs: "Counter changed from 0 to 5, version: 1"
 rCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 2"
 ```
 
