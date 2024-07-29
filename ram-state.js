@@ -62,6 +62,18 @@ class RamState {
 
     // Utility function for comparison
     #isEqual(obj1, obj2) {
+        if (obj1 instanceof Set && obj2 instanceof Set) {
+            return obj1.size === obj2.size && [...obj1].every(value => obj2.has(value));
+        }
+        if (obj1 instanceof Map && obj2 instanceof Map) {
+            if (obj1.size !== obj2.size) return false;
+            for (let [key, value] of obj1) {
+                if (!obj2.has(key) || !this.#isEqual(value, obj2.get(key))) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return JSON.stringify(obj1) === JSON.stringify(obj2);
     }
 
