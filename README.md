@@ -14,22 +14,32 @@ RamStateJs is a lightweight state management library designed specifically for v
 #### Instance
 Create a new state instance with an initial value.
 
+##### Primitive Values
+
 ```javascript
-const rString = new RamState('');       // string
-const rInteger = new RamState(0);       // integer
-const rBoolean = new RamState(true);    // boolean
-const rArray = new RamState([]);        // array 
-const rObject = new RamState({});       // object
-...
-// instance variable counter as integer
-const rCounter = new RamState(0);       
+const rNumber = new RamState(10);           // Number
+const rString = new RamState("hello");      // String
+const rBoolean = new RamState(true);        // Boolean
+const rNull = new RamState(null);           // Null
+const rUndefined = new RamState(undefined); // Undefined
+```
+
+##### Complex Values
+```javascript
+const rObject = new RamState({ key: 'value' });         // Object
+const rArray = new RamState([1, 2, 3]);                 // Array
+const rDate = new RamState(new Date());                 // Date
+const rRegExp = new RamState(/abc/i);                   // RegExp
+const rSet = new RamState(new Set([1, 2, 3]));          // Set
+const rMap = new RamState(new Map([['key', 'value']])); // Map
 ```
 
 #### Setters
 Update the state directly or using a function.
 ```javascript
-rCounter.set(5);                // Direct update
-rCounter.set(val => val + 5);   // Functional update
+const rCounter = new RamState(0);   // instance variable counter as integer
+rCounter.set(5);                    // Direct update
+rCounter.set(val => val + 5);       // Functional update
 ```
 
 #### Getters
