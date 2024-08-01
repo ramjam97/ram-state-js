@@ -9,9 +9,11 @@ class RamState {
 
     #data;
     #sideEffects;
-    #version
+    #version;
+    #initialData;
 
     constructor(initialData) {
+        this.#initialData = this.#deepClone(initialData);
         this.#data = this.#deepClone(initialData);
         this.#sideEffects = [];
         this.#version = 0;
@@ -50,6 +52,20 @@ class RamState {
         }
     }
 
+    reset(newData = null) {
+        const oldData = this.#data;
+        if (newData === null) {
+            newData = this.#deepClone(this.#initialData);
+        } else {
+            newData = this.#deepClone(newData);
+        }
+        if (!this.#isEqual(oldData, newData)) {
+            this.#version += 1;
+        }
+        this.#data = newData;
+        this.#triggerSideEffects(newData, oldData, this.#version);
+    }
+
     #triggerSideEffects(newData, oldData, version) {
         this.#sideEffects.forEach(callback => {
             try {
@@ -60,7 +76,6 @@ class RamState {
         });
     }
 
-    // Utility function for comparison
     #isEqual(obj1, obj2) {
         if (obj1 instanceof Set && obj2 instanceof Set) {
             return obj1.size === obj2.size && [...obj1].every(value => obj2.has(value));
@@ -77,7 +92,6 @@ class RamState {
         return JSON.stringify(obj1) === JSON.stringify(obj2);
     }
 
-    // Utility function for deep cloning
     #deepClone(value, hash = new WeakMap()) {
         if (Object(value) !== value) return value;
         if (value instanceof Date) return new Date(value);
