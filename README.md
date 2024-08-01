@@ -8,6 +8,7 @@ RamStateJs is a lightweight state management library designed specifically for v
 - **Getters:** Retrieve the current state using a method or a property.
 - **Side Effects:** Execute functions whenever the state changes.
 - **Version Tracking:** Track the version of the state with each update.
+- **Reset:** Reset the state to its initial value or a new value.
 
 
 ## Usage/Examples
@@ -51,24 +52,38 @@ console.log(rCounter.value);    // Using property
 
 #### Side Effects
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
+
+##### With the second parameter
+The second parameter true will execute the callback immediately upon setting the watch.
 ```javascript
-// With the second parameter
-// The second parameter `true` will execute the callback immediately
 rCounter.watch((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
 }, true); 
+```
 
-// Without the second parameter
-// This will only execute the callback on subsequent state changes
+##### Without the second parameter
+The callback will only be executed when the state changes.
+```javascript
 rCounter.watch((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
 });
+```
 
-// Update the state
-rCounter.set(5);               // Logs: "Counter changed from 0 to 5, version: 1"
-rCounter.set(val => val + 5);  // Logs: "Counter changed from 5 to 10, version: 2"
+#### Reset
+Reset the state to its initial value or a new value.
+
+##### Reset to initial value
+If no parameter is provided, the state resets to the initial value provided during the instance creation.
+```javascript
+rCounter.reset(); // Resets to the initial value
+```
+
+##### Reset to a new value
+You can also reset the state to a new value by providing it as a parameter.
+```javascript
+rCounter.reset(10); // Resets to the new value 10
 ```
 
 ## Installation
