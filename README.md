@@ -53,15 +53,6 @@ console.log(rCounter.value);    // Using property
 #### Side Effects
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 
-##### With the second parameter
-The second parameter true will execute the callback immediately upon setting the watch.
-```javascript
-rCounter.watch((newData, oldData, version) => {
-    console.log(`Data changed from ${oldData} to ${newData}`);
-    console.log(`version: ${version}`);
-}, true); 
-```
-
 ##### Without the second parameter
 The callback will only be executed when the state changes.
 ```javascript
@@ -71,8 +62,17 @@ rCounter.watch((newData, oldData, version) => {
 });
 ```
 
+##### With the second parameter
+The second parameter **true** will execute the callback immediately upon setting the watch.
+```javascript
+rCounter.watch((newData, oldData, version) => {
+    console.log(`Data changed from ${oldData} to ${newData}`);
+    console.log(`version: ${version}`);
+}, true); 
+```
+
 #### Reset
-Reset the state to its initial value or a new value.
+Reset the state to its initial value or a new value. This method will also trigger the side effects if they are defined, even if the state remains unchanged.
 
 ##### Reset to initial value
 If no parameter is provided, the state resets to the initial value provided during the instance creation.
