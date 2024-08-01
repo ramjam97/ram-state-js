@@ -8,7 +8,7 @@ RamStateJs is a lightweight state management library designed specifically for v
 - **Getters:** Retrieve the current state using a method or a property.
 - **Side Effects:** Execute functions whenever the state changes.
 - **Version Tracking:** Track the version of the state with each update.
-- **Reset:** Reset the state to its initial value or a new value.
+- **Reset:** Reset the state to its initial value or a new value, and trigger side effects if defined.
 
 
 ## Usage/Examples
