@@ -50,6 +50,12 @@ console.log(rCounter.get());    // Using method
 console.log(rCounter.value);    // Using property
 ```
 
+#### Version
+Access the current version of the state.
+```javascript
+console.log(rCounter.version);  // Get the version number
+```
+
 #### Side Effects
 Execute a function whenever the state changes, with an option to execute immediately upon initializing.
 

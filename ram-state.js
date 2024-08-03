@@ -1,5 +1,5 @@
 /*!
- * RamStateJs JavaScript Library v1.0.0
+ * RamStateJs JavaScript Library v1.0.1
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-07-26T16:46:19.944Z
  */
@@ -35,6 +35,10 @@ class RamState {
 
     get value() {
         return this.#deepClone(this.#data);
+    }
+
+    get version() {
+        return this.#version;
     }
 
     watch(callback, executeOnInit = false) {
