@@ -86,13 +86,13 @@ rCounter.uponChange((newData, oldData, version) => {
 ### Reset
 Reset the state to its initial value or a new value. This method will also trigger the **`uponSet`** and **`uponChange`** effects if they are defined, even if the state remains unchanged.
 
-##### Reset to initial value
+#### Reset to initial value
 If no parameter is provided, the state resets to the initial value provided during the instance creation.
 ```javascript
 rCounter.reset(); // Resets to the initial value
 ```
 
-##### Reset to a new value
+#### Reset to a new value
 You can also reset the state to a new value by providing it as a parameter.
 ```javascript
 rCounter.reset(10); // Resets to the new value 10
