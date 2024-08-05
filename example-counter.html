@@ -31,7 +31,7 @@
     <script>
         const rCounter = new RamState(0);
 
-        rCounter.watch(count => {
+        rCounter.uponChange(count => {
             document.getElementById('countBtn').innerHTML = count;
             document.getElementById('textCount').innerHTML = count;
         }, true);

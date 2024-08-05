@@ -12,10 +12,10 @@ RamStateJs is a lightweight state management library designed specifically for v
 
 
 ## Usage/Examples
-#### Instance
+### Instance
 Create a new state instance with an initial value.
 
-##### Primitive Values
+#### Primitive Values
 
 ```javascript
 const rNumber = new RamState(10);           // Number
@@ -25,7 +25,7 @@ const rNull = new RamState(null);           // Null
 const rUndefined = new RamState(undefined); // Undefined
 ```
 
-##### Complex Values
+#### Complex Values
 ```javascript
 const rObject = new RamState({ key: 'value' });         // Object
 const rArray = new RamState([1, 2, 3]);                 // Array
@@ -35,7 +35,7 @@ const rSet = new RamState(new Set([1, 2, 3]));          // Set
 const rMap = new RamState(new Map([['key', 'value']])); // Map
 ```
 
-#### Setters
+### Setters
 Update the state directly or using a function.
 ```javascript
 const rCounter = new RamState(0);   // instance variable counter as integer
@@ -43,42 +43,48 @@ rCounter.set(5);                    // Direct update
 rCounter.set(val => val + 5);       // Functional update
 ```
 
-#### Getters
+### Getters
 Retrieve the current state.
 ```javascript
 console.log(rCounter.get());    // Using method
 console.log(rCounter.value);    // Using property
 ```
 
-#### Version
+### Version
 Access the current version of the state.
 ```javascript
 console.log(rCounter.version);  // Get the version number
 ```
 
-#### Side Effects
-Execute a function whenever the state changes, with an option to execute immediately upon initializing.
+### Side Effects
+#### uponSet
+Execute a function whenever the state is set, regardless of whether there is a change. The function is also executed immediately upon setting the **`uponSet`** callback if **`executeOnInit`** is **`true`**.
 
-##### Without the second parameter
-The callback will only be executed when the state changes.
+##### Example
 ```javascript
-rCounter.watch((newData, oldData, version) => {
-    console.log(`Data changed from ${oldData} to ${newData}`);
-    console.log(`version: ${version}`);
-});
+rCounter.uponSet((hasChange, newData, oldData, version) => {
+    console.log(`State was set`);
+    if (hasChange) {
+        console.log(`Data changed from ${oldData} to ${newData}`);
+    } else {
+        console.log(`Data remained the same`);
+    }
+}, true); // Executes immediately upon setting
+
 ```
 
-##### With the second parameter
-The second parameter **true** will execute the callback immediately upon setting the watch.
+#### uponChange
+Execute a function whenever the state changes. The function is also executed immediately upon setting the **`uponChange`** callback if **`executeOnInit`** is **`true`**.
+##### Example
 ```javascript
-rCounter.watch((newData, oldData, version) => {
+rCounter.uponChange((newData, oldData, version) => {
     console.log(`Data changed from ${oldData} to ${newData}`);
     console.log(`version: ${version}`);
-}, true); 
+}, true); // Executes immediately upon setting
 ```
 
-#### Reset
-Reset the state to its initial value or a new value. This method will also trigger the side effects if they are defined, even if the state remains unchanged.
+### Reset
+Reset the state to its initial value or a new value. This method will also trigger the **`uponSet`** and **`uponChange`** effects if they are defined, even if the state remains unchanged.
 
 ##### Reset to initial value
 If no parameter is provided, the state resets to the initial value provided during the instance creation.
@@ -93,10 +99,10 @@ rCounter.reset(10); // Resets to the new value 10
 ```
 
 ## Installation
-#### How to Add RamStateJs to Your Project
-To add RamStateJs to your project, you can simply download the ram-state.min.js file from the repository and include it in your project.
+### How to Add RamStateJs to Your Project
+To add RamStateJs to your project, you can simply download the **`ram-state.min.js`** file from the repository and include it in your project.
 
-1. Download ram-state.min.js: 
+1. Download **`ram-state.min.js`**: 
 Download the file from the repository and place it in your project directory.
 
 2. Include RamStateJs in Your Project:

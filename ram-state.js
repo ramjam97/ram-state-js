@@ -1,31 +1,40 @@
 /*!
- * RamStateJs JavaScript Library v1.0.1
+ * RamStateJs JavaScript Library v1.1.0
  * https://github.com/ramjam97/ram-state-js
- * Date: 2024-07-26T16:46:19.944Z
+ * Date: 2024-08-05
  */
 
 // Define a RamState object
 class RamState {
 
     #data;
-    #sideEffects;
+    #uponChangeEffects;
     #version;
     #initialData;
+    #uponSetEffects;
 
     constructor(initialData) {
         this.#initialData = this.#deepClone(initialData);
         this.#data = this.#deepClone(initialData);
-        this.#sideEffects = [];
+        this.#uponSetEffects = [];
+        this.#uponChangeEffects = [];
         this.#version = 0;
     }
 
     set(param) {
         const oldData = this.#data;
         const newData = typeof param === 'function' ? param(this.#deepClone(oldData)) : param;
-        if (!this.#isEqual(oldData, newData)) {
+        const hasChange = !this.#isEqual(oldData, newData);
+
+        if (hasChange) {
             this.#version += 1;
             this.#data = this.#deepClone(newData);
-            this.#triggerSideEffects(newData, oldData, this.#version);
+        }
+
+        this.#triggerSetEffects(hasChange, newData, oldData, this.#version);
+
+        if (hasChange) {
+            this.#triggerChangeEffects(newData, oldData, this.#version);
         }
     }
 
@@ -41,41 +50,67 @@ class RamState {
         return this.#version;
     }
 
-    watch(callback, executeOnInit = false) {
+    uponSet(callback, executeOnInit = false) {
         if (typeof callback === 'function') {
-            this.#sideEffects.push(callback);
+            this.#uponSetEffects.push(callback);
+            if (executeOnInit) {
+                try {
+                    callback(false, this.#data, this.#data, this.#version);
+                } catch (error) {
+                    console.error('Error in initial uponSet callback:', error);
+                }
+            }
+        } else {
+            console.warn('Callback provided to uponSet is not a function');
+        }
+    }
+
+    uponChange(callback, executeOnInit = false) {
+        if (typeof callback === 'function') {
+            this.#uponChangeEffects.push(callback);
             if (executeOnInit) {
                 try {
                     callback(this.#data, this.#data, this.#version);
                 } catch (error) {
-                    console.error('Error in initial side effect callback:', error);
+                    console.error('Error in initial uponChange callback:', error);
                 }
             }
         } else {
-            console.warn('Callback provided to watch is not a function');
+            console.warn('Callback provided to uponChange is not a function');
         }
     }
 
     reset(newData = null) {
         const oldData = this.#data;
-        if (newData === null) {
-            newData = this.#deepClone(this.#initialData);
-        } else {
-            newData = this.#deepClone(newData);
-        }
-        if (!this.#isEqual(oldData, newData)) {
+        newData = newData === null ? this.#deepClone(this.#initialData) : this.#deepClone(newData);
+
+        const hasChange = !this.#isEqual(oldData, newData);
+
+        if (hasChange) {
             this.#version += 1;
         }
+
         this.#data = newData;
-        this.#triggerSideEffects(newData, oldData, this.#version);
+        this.#triggerSetEffects(hasChange, newData, oldData, this.#version);
+        this.#triggerChangeEffects(newData, oldData, this.#version);
     }
 
-    #triggerSideEffects(newData, oldData, version) {
-        this.#sideEffects.forEach(callback => {
+    #triggerSetEffects(hasChange, newData, oldData, version) {
+        this.#uponSetEffects.forEach(callback => {
+            try {
+                callback(hasChange, newData, oldData, version);
+            } catch (error) {
+                console.error('Error in uponSet callback:', error);
+            }
+        });
+    }
+
+    #triggerChangeEffects(newData, oldData, version) {
+        this.#uponChangeEffects.forEach(callback => {
             try {
                 callback(newData, oldData, version);
             } catch (error) {
-                console.error('Error in side effect callback:', error);
+                console.error('Error in uponChange callback:', error);
             }
         });
     }
