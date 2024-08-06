@@ -84,7 +84,7 @@ rCounter.uponChange((newData, oldData, version) => {
 ```
 
 ### Reset
-Reset the state to its initial value or a new value. This method will also trigger the **`uponSet`** and **`uponChange`** effects if they are defined, even if the state remains unchanged.
+Reset the state to its initial value or a new value. This method will trigger **`uponSet`** and **`uponChange`** effects. The **`uponSet`** effect is triggered regardless of whether the state has changed. The **`uponChange`** effect is triggered only if the new value differs from the current state.
 
 #### Reset to initial value
 If no parameter is provided, the state resets to the initial value provided during the instance creation.

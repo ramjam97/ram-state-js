@@ -92,7 +92,10 @@ class RamState {
 
         this.#data = newData;
         this.#triggerSetEffects(hasChange, newData, oldData, this.#version);
-        this.#triggerChangeEffects(newData, oldData, this.#version);
+        
+        if (hasChange) {
+            this.#triggerChangeEffects(newData, oldData, this.#version);
+        }
     }
 
     #triggerSetEffects(hasChange, newData, oldData, version) {
