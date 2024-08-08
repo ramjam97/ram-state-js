@@ -1,5 +1,5 @@
 /*!
- * RamStateJs JavaScript Library v1.2.0
+ * RamStateJs JavaScript Library v1.2.1
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-08-05
  */
@@ -56,9 +56,9 @@ class RamState {
             if (executeOnInit) {
                 try {
                     callback({
-                        hasChange: false,
+                        hasChange: !this.#isEqual(this.#data, this.#initialData),
                         latest: this.#data,
-                        previous: this.#data,
+                        previous: this.#initialData,
                         version: this.#version
                     });
                 } catch (error) {
@@ -70,6 +70,10 @@ class RamState {
         }
     }
 
+    watch(callback, executeOnInit = false) {
+        return this.uponSet(callback, executeOnInit);
+    }
+
     uponChange(callback, executeOnInit = false) {
         if (typeof callback === 'function') {
             this.#uponChangeEffects.push(callback);
@@ -77,7 +81,7 @@ class RamState {
                 try {
                     callback({
                         latest: this.#data,
-                        previous: this.#data,
+                        previous: this.#initialData,
                         version: this.#version
                     });
                 } catch (error) {
@@ -87,6 +91,10 @@ class RamState {
         } else {
             console.warn('Callback provided to uponChange is not a function');
         }
+    }
+
+    watchChange(callback, executeOnInit = false) {
+        return this.uponChange(callback, executeOnInit);
     }
 
     reset(newData = null) {
@@ -101,7 +109,7 @@ class RamState {
 
         this.#data = newData;
         this.#triggerSetEffects(hasChange, newData, oldData, this.#version);
-        
+
         if (hasChange) {
             this.#triggerChangeEffects(newData, oldData, this.#version);
         }
