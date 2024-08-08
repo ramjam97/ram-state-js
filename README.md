@@ -62,24 +62,25 @@ Execute a function whenever the state is set, regardless of whether there is a c
 
 ##### Example
 ```javascript
-rCounter.uponSet((hasChange, newData, oldData, version) => {
+rCounter.uponSet(data => {
+    const { version, latest, previous, hasChange } = data;
     console.log(`State was set`);
     if (hasChange) {
-        console.log(`Data changed from ${oldData} to ${newData}`);
+        console.log(`Data changed from ${previous} to ${latest}`);
     } else {
         console.log(`Data remained the same`);
     }
 }, true); // Executes immediately upon setting
-
 ```
 
 #### uponChange
 Execute a function whenever the state changes. The function is also executed immediately upon setting the **`uponChange`** callback if **`executeOnInit`** is **`true`**.
 ##### Example
 ```javascript
-rCounter.uponChange((newData, oldData, version) => {
-    console.log(`Data changed from ${oldData} to ${newData}`);
-    console.log(`version: ${version}`);
+rCounter.uponChange(data => {
+    const { version, latest, previous } = data;
+    console.log(`Data changed from ${previous} to ${latest}`);
+    console.log(`Version: ${version}`);
 }, true); // Executes immediately upon setting
 ```
 
