@@ -1,4 +1,4 @@
-# RamStateJs
+# RamStateJs v1.2.0
 RamStateJs is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
 
 
