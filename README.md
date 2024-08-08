@@ -1,4 +1,4 @@
-# RamStateJs v1.2.0
+# RamStateJs v1.2.1
 RamStateJs is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
 
 
@@ -8,6 +8,7 @@ RamStateJs is a lightweight state management library designed specifically for v
 - **Getters:** Retrieve the current state using a method or a property.
 - **Version Tracking:** Track the version of the state with each update.
 - **Side Effects:** Execute functions whenever the state changes.
+- **Watchers:** Similar to side effects, execute functions on state setting or changing.
 - **Reset:** Reset the state to its initial value or a new value, and trigger side effects if defined.
 
 
@@ -57,8 +58,8 @@ console.log(rCounter.version);  // Get the version number
 ```
 
 ### Side Effects
-#### uponSet
-Execute a function whenever the state is set, regardless of whether there is a change. The function is also executed immediately upon setting the **`uponSet`** callback if **`executeOnInit`** is **`true`**.
+#### uponSet / watch
+Execute a function whenever the state is set, regardless of whether there is a change. The function is also executed immediately upon setting the **`uponSet`** or **`watch`** callback if **`executeOnInit`** is **`true`**.
 
 ##### Example
 ```javascript
@@ -72,9 +73,15 @@ rCounter.uponSet(data => {
     }
 }, true); // Executes immediately upon setting
 ```
+You can use **`watch`** as an alias to **`uponSet`**:
+```javascript
+rCounter.watch(data => {
+    // Similar behavior as `uponSet`
+}, true);
+```
 
-#### uponChange
-Execute a function whenever the state changes. The function is also executed immediately upon setting the **`uponChange`** callback if **`executeOnInit`** is **`true`**.
+#### uponChange / watchChange
+Execute a function whenever the state changes. The function is also executed immediately upon setting the **`uponChange`** or **`watchChange`** callback if **`executeOnInit`** is **`true`**.
 ##### Example
 ```javascript
 rCounter.uponChange(data => {
@@ -83,9 +90,15 @@ rCounter.uponChange(data => {
     console.log(`Version: ${version}`);
 }, true); // Executes immediately upon setting
 ```
+You can use **`watchChange`** as an alias to **`uponChange`**:
+```javascript
+rCounter.watchChange(data => {
+    // Similar behavior as `uponChange`
+}, true);
+```
 
 ### Reset
-Reset the state to its initial value or a new value. This method will trigger **`uponSet`** and **`uponChange`** effects. The **`uponSet`** effect is triggered regardless of whether the state has changed. The **`uponChange`** effect is triggered only if the new value differs from the current state.
+Reset the state to its initial value or a new value. This method will trigger **`uponSet`** / **`watch`** and **`uponChange`** / **`watchChange`** effects. The **`uponSet`** / **`watch`** effect is triggered regardless of whether the state has changed. The **`uponChange`** / **`watchChange`** effect is triggered only if the new value differs from the current state.
 
 #### Reset to initial value
 If no parameter is provided, the state resets to the initial value provided during the instance creation.
