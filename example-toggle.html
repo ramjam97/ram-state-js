@@ -14,12 +14,14 @@
     <div class="container py-3">
         <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="min-height: 50vh;">
 
+            <div class="card p-2 d-flex justify-content-center align-items-center"
+                style="height: 150px;min-width: 200px;">
+                <span class="alert alert-success m-0" id="greetings">Hi There!</span>
+            </div>
             <span>
                 <button type="button" class="btn btn-info" onclick="rToggle.set(val => !val)" id="toggleBtn"></button>
             </span>
-            <div class="alert alert-success" id="greetings">
-                Hi There!
-            </div>
+
 
         </div>
     </div>
@@ -30,7 +32,7 @@
 
         rToggle.uponChange(data => {
             const val = data.latest;
-            document.getElementById('toggleBtn').innerHTML = 'Display: ' + (val ? 'True' : 'False');
+            document.getElementById('toggleBtn').innerHTML = val ? 'OPEN' : 'CLOSE';
             document.getElementById('greetings').style = val ? 'display:block;' : 'display:none;';
         }, true);
 
