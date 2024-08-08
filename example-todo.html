@@ -36,7 +36,7 @@
         const rTaskList = new RamState(['coding']);
 
         rTaskList.uponChange(list => {
-            document.getElementById('taskList').innerHTML = list.map((item, i) => {
+            document.getElementById('taskList').innerHTML = list.latest.map((item, i) => {
                 return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center">
                     <span>${item}</span>
                     <button class="btn btn-danger" onclick="removeTask(${i})">x</button>

@@ -72,8 +72,8 @@
     <script>
         const rPerson = new RamState({});
 
-        rPerson.uponChange(data => {
-            document.getElementById('dataDisplay').innerHTML = JSON.stringify(data, null, 2);
+        rPerson.uponChange(res => {
+            document.getElementById('dataDisplay').innerHTML = JSON.stringify(res.latest, null, 2);
         });
 
         function setValue(e) {

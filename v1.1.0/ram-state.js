@@ -1,5 +1,5 @@
 /*!
- * RamStateJs JavaScript Library v1.2.0
+ * RamStateJs JavaScript Library v1.1.0
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-08-05
  */
@@ -55,12 +55,7 @@ class RamState {
             this.#uponSetEffects.push(callback);
             if (executeOnInit) {
                 try {
-                    callback({
-                        hasChange: false,
-                        latest: this.#data,
-                        previous: this.#data,
-                        version: this.#version
-                    });
+                    callback(false, this.#data, this.#data, this.#version);
                 } catch (error) {
                     console.error('Error in initial uponSet callback:', error);
                 }
@@ -75,11 +70,7 @@ class RamState {
             this.#uponChangeEffects.push(callback);
             if (executeOnInit) {
                 try {
-                    callback({
-                        latest: this.#data,
-                        previous: this.#data,
-                        version: this.#version
-                    });
+                    callback(this.#data, this.#data, this.#version);
                 } catch (error) {
                     console.error('Error in initial uponChange callback:', error);
                 }
@@ -110,12 +101,7 @@ class RamState {
     #triggerSetEffects(hasChange, newData, oldData, version) {
         this.#uponSetEffects.forEach(callback => {
             try {
-                callback({
-                    hasChange,
-                    latest: newData,
-                    previous: oldData,
-                    version
-                });
+                callback(hasChange, newData, oldData, version);
             } catch (error) {
                 console.error('Error in uponSet callback:', error);
             }
@@ -125,11 +111,7 @@ class RamState {
     #triggerChangeEffects(newData, oldData, version) {
         this.#uponChangeEffects.forEach(callback => {
             try {
-                callback({
-                    latest: newData,
-                    previous: oldData,
-                    version
-                });
+                callback(newData, oldData, version);
             } catch (error) {
                 console.error('Error in uponChange callback:', error);
             }

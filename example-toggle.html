@@ -28,7 +28,8 @@
 
         const rToggle = new RamState(true);
 
-        rToggle.uponChange(val => {
+        rToggle.uponChange(data => {
+            const val = data.latest;
             document.getElementById('toggleBtn').innerHTML = 'Display: ' + (val ? 'True' : 'False');
             document.getElementById('greetings').style = val ? 'display:block;' : 'display:none;';
         }, true);
