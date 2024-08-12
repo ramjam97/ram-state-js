@@ -1,5 +1,5 @@
 /*!
- * RamStateJs JavaScript Library v1.2.1
+ * RamStateJs JavaScript Library v1.2.2
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-08-05
  */
@@ -94,6 +94,10 @@ class RamState {
     }
 
     watchChange(callback, executeOnInit = false) {
+        return this.uponChange(callback, executeOnInit);
+    }
+
+    watchChanges(callback, executeOnInit = false) {
         return this.uponChange(callback, executeOnInit);
     }
 
