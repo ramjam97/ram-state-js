@@ -63,8 +63,8 @@ Execute a function whenever the state is set, regardless of whether there is a c
 
 ##### Example
 ```javascript
-rCounter.uponSet(data => {
-    const { version, latest, previous, hasChange } = data;
+rCounter.uponSet(context => {
+    const { version, latest, previous, hasChange } = context;
     console.log(`State was set`);
     if (hasChange) {
         console.log(`Data changed from ${previous} to ${latest}`);
@@ -75,7 +75,7 @@ rCounter.uponSet(data => {
 ```
 You can use **`watch`** as an alias to **`uponSet`**:
 ```javascript
-rCounter.watch(data => {
+rCounter.watch(context => {
     // Similar behavior as `uponSet`
 }, true);
 ```
@@ -84,15 +84,15 @@ rCounter.watch(data => {
 Execute a function whenever the state changes. The function is also executed immediately upon setting the **`uponChange`** or **`watchChange`** callback if **`executeOnInit`** is **`true`**.
 ##### Example
 ```javascript
-rCounter.uponChange(data => {
-    const { version, latest, previous } = data;
+rCounter.uponChange(context => {
+    const { version, latest, previous } = context;
     console.log(`Data changed from ${previous} to ${latest}`);
     console.log(`Version: ${version}`);
 }, true); // Executes immediately upon setting
 ```
 You can use **`watchChange`** as an alias to **`uponChange`**:
 ```javascript
-rCounter.watchChange(data => {
+rCounter.watchChange(context => {
     // Similar behavior as `uponChange`
 }, true);
 ```

@@ -73,8 +73,8 @@
     <script>
         const rPerson = new RamState({});
 
-        rPerson.uponSet(res => {
-            const { latest, hasChange } = res;
+        rPerson.uponSet(context => {
+            const { latest, hasChange } = context;
             if (hasChange) {
                 document.getElementById('dataDisplay').innerHTML = JSON.stringify(latest, null, 2);
             }
