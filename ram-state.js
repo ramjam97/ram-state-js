@@ -43,7 +43,11 @@ class RamState {
     }
 
     get value() {
-        return this.#deepClone(this.#data);
+        return this.get();
+    }
+
+    get current() {
+        return this.get();
     }
 
     get version() {

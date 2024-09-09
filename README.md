@@ -49,6 +49,7 @@ Retrieve the current state.
 ```javascript
 console.log(rCounter.get());    // Using method
 console.log(rCounter.value);    // Using property
+console.log(rCounter.current);    // Using property
 ```
 
 ### Version
