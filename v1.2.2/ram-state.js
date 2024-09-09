@@ -57,7 +57,7 @@ class RamState {
                 try {
                     callback({
                         hasChange: !this.#isEqual(this.#data, this.#initialData),
-                        current: this.#data,
+                        latest: this.#data,
                         previous: this.#initialData,
                         version: this.#version
                     });
@@ -80,7 +80,7 @@ class RamState {
             if (executeOnInit) {
                 try {
                     callback({
-                        current: this.#data,
+                        latest: this.#data,
                         previous: this.#initialData,
                         version: this.#version
                     });
@@ -124,7 +124,7 @@ class RamState {
             try {
                 callback({
                     hasChange,
-                    current: newData,
+                    latest: newData,
                     previous: oldData,
                     version
                 });
@@ -138,7 +138,7 @@ class RamState {
         this.#uponChangeEffects.forEach(callback => {
             try {
                 callback({
-                    current: newData,
+                    latest: newData,
                     previous: oldData,
                     version
                 });

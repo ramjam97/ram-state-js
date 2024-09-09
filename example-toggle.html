@@ -31,7 +31,7 @@
         const rToggle = new RamState(true);
 
         rToggle.uponChange(context => {
-            const val = context.latest;
+            const val = context.current;
             document.getElementById('toggleBtn').innerHTML = val ? 'OPEN' : 'CLOSE';
             document.getElementById('greetings').style = val ? 'display:block;' : 'display:none;';
         }, true);

@@ -1,4 +1,4 @@
-# RamStateJs v1.3.0
+# RamStateJs v1.2.2
 RamStateJs is a lightweight state management library designed specifically for vanilla JavaScript. It provides a simple and efficient way to manage and update state without the need for additional frameworks. It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
 
 
@@ -64,10 +64,10 @@ Execute a function whenever the state is set, regardless of whether there is a c
 ##### Example
 ```javascript
 rCounter.uponSet(context => {
-    const { version, current, previous, hasChange } = context;
+    const { version, latest, previous, hasChange } = context;
     console.log(`State was set`);
     if (hasChange) {
-        console.log(`Data changed from ${previous} to ${current}`);
+        console.log(`Data changed from ${previous} to ${latest}`);
     } else {
         console.log(`Data remained the same`);
     }
@@ -85,8 +85,8 @@ Execute a function whenever the state changes. The function is also executed imm
 ##### Example
 ```javascript
 rCounter.uponChange(context => {
-    const { version, current, previous } = context;
-    console.log(`Data changed from ${previous} to ${current}`);
+    const { version, latest, previous } = context;
+    console.log(`Data changed from ${previous} to ${latest}`);
     console.log(`Version: ${version}`);
 }, true); // Executes immediately upon setting
 ```
