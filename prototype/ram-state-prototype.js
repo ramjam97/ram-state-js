@@ -188,6 +188,7 @@ class RamStateContext {
     #renderHTML() {
 
         const textAttr = 'rs-text';
+        const valueAttr = 'rs-value';
         const showAttr = 'rs-show';
 
         const updates = [];
@@ -203,6 +204,21 @@ class RamStateContext {
                 }
             } catch (error) {
                 this.#debugLog('warn', `[${textAttr}] error:`, error?.message);
+            }
+        });
+
+        document.querySelectorAll(`[${valueAttr}]`).forEach(element => {
+            try {
+                const textValue = element.getAttribute(valueAttr);
+                const parsedValue = this.#safeEvaluate(textValue);
+                if (!this.#isEqual(String(element.value || null), String(parsedValue))) {
+                    updates.push(() => {
+                        this.#debugLog('info', `[${valueAttr}] -> "${textValue}" update:`, element.value || '""', '->', parsedValue);
+                        element.value = parsedValue;
+                    });
+                }
+            } catch (error) {
+                this.#debugLog('warn', `[${valueAttr}] error:`, error?.message);
             }
         });
 

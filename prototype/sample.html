@@ -70,7 +70,7 @@
                 <span x-text="count"></span>
             </div>
 
-            <div style="display: flex;flex-direction: row;gap: 1;">
+            <div style="display: flex;flex-direction: row;gap: .25rem;">
                 <button onclick="stateContext.counter.set(val => val+1)">
                     Counter <span rs-text="stateContext.counter.value"></span> + 1
                 </button>
@@ -78,6 +78,7 @@
                 <button onclick="stateContext.counter.set(val => val-1)">
                     Counter <span rs-text="stateContext.counter.value"></span> - 1
                 </button>
+                <input type="text" rs-value="stateContext.counter.value">
             </div>
 
             <button onclick="showStates()">States</button>
@@ -94,7 +95,15 @@
                     text="even">Even</span>
             </span>
 
+
             <button onclick="stateContext.counter.set(0)">reset counter</button>
+
+            <div>
+                <h5>List</h5>
+                <ul id="list"></ul>
+            </div>
+
+            <span>${a}</span>
 
         </div>
 
@@ -121,6 +130,16 @@
 
         stateContext.data.onSet(context => {
             console.log('on set data');
+
+            const ul = document.getElementById('list');
+            ul.innerHTML = '';
+            Object.keys(context.current).forEach(key => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${key}: ${context.current[key]}</span> (<span rs-text="stateContext.counter.value"></span>)`;
+
+                ul.appendChild(li);
+            });
+
         }, true);
 
         stateContext.data.onChange(context => {
