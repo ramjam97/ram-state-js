@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RamState Example - Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="ram-state.min.js"></script>
+</head>
+
+<body>
+    <div class="container py-3">
+        <div class="row">
+
+            <div class="col-md-6">
+                <div class="p-3 d-flex flex-column gap-3" id="personForm">
+
+                    <h3>Person Form</h3>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" placeholder="First Name" name="firstName"
+                            onkeyup="setValue(event)">
+                        <label>First Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" placeholder="Middle Name" name="middleName"
+                            onkeyup="setValue(event)">
+                        <label>Middle Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" placeholder="Last Name" name="lastName"
+                            onkeyup="setValue(event)">
+                        <label>Last Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="number" class="form-control" placeholder="Age" name="age"
+                            onkeyup="setValue(event)">
+                        <label>Age</label>
+                    </div>
+                    <div class="form-floating">
+                        <select class="form-select" name="gender" onchange="setValue(event)">
+                            <option selected>Open this select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-Binary">Non-Binary</option>
+                            <option value="Transgender">Transgender</option>
+                            <option value="Transformer">Transformer</option>
+                        </select>
+                        <label>Gender</label>
+                    </div>
+                    <div class="form-floating">
+                        <textarea class="form-control" placeholder="Leave a comment here" name="remarks"
+                            onkeyup="setValue(event)"></textarea>
+                        <label for="floatingTextarea2">Remarks</label>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 d-flex flex-column gap-3">
+                    <h3>Preview Data</h3>
+                    <pre class="bg-light" style="white-space: pre-wrap;" id="dataDisplay"></pre>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    </div>
+
+    <script>
+        const rPerson = new RamState({});
+
+        rPerson.uponSet(context => {
+            const { current, hasChange } = context;
+            if (hasChange) {
+                document.getElementById('dataDisplay').innerHTML = JSON.stringify(current, null, 2);
+            }
+        }, true);
+
+        function setValue(e) {
+            const key = e.target.name;
+            const value = e.target.value;
+            rPerson.set(cur => ({ ...cur, ...{ [key]: value } }));
+        }
+
+    </script>
+
+</body>
+
+</html>
