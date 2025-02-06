@@ -4,7 +4,7 @@
 **GitHub Repository:** [RamStateJs](https://github.com/ramjam97/ram-state-js)  
 **Release Date:** 2024-08-05  
 
-RamStateJs is a lightweight state management library for JavaScript, providing deep cloning, change detection, and subscription-based updates. It supports complex data types, including `Set`, `Map`, `Date`, `RegExp`, and circular references.
+RamStateJs is a lightweight state management library for Vanilla JavaScript with deep cloning, change detection, and subscription-based updates. Handles complex data types `Set`, `Map`, `Date`, `RegExp`, and circular references.
 
 ## Features
 - Deep cloning to prevent unintended mutations.

@@ -3,7 +3,7 @@
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-08-05
  * 
- * A lightweight state management library with deep cloning, change detection,
+ * A lightweight state management library for Vanilla JavaScript with deep cloning, change detection,
  * and subscription-based updates. Handles complex data types (Set/Map/Date/RegExp)
  * and circular references.
  */
