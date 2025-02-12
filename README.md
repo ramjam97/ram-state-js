@@ -16,7 +16,7 @@ RamStateJs is a lightweight state management library for Vanilla JavaScript with
 
 ## Script Tag
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/1.5.1/ram-state.min.js"></script>
 ```
 
 ## Usage
