@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RamState Example - List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <!-- ram-state cdn -->
+    <script src="/ram-state.js"></script>
+
+</head>
+
+<body>
+    <div class="container py-3">
+
+        <div class="d-flex justify-content-center">
+            <div class="col-md-8 d-flex flex-column gap-3">
+                <h3 class="text-center">List Of Quotes <span id="totalQuotes"></span></h3>
+                <ul class="list-group" id="listQuotes"></ul>
+
+                <div class="d-flex flex-wrap justify-content-center gap-1" id="pagination"></div>
+
+                <div class="text-center">
+                    <button class="btn btn-primary" type="button" id="loadMoreBtn" onclick="fetchQuotes()">Load
+                        more</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+<script>
+
+    const isLoading = new RamState(false);
+    const quotes = new RamState([]);
+    const currentQuotes = new RamState([]);
+    const selectedPage = new RamState(0);
+    const perPage = 5;
+
+    function fetchQuotes() {
+        isLoading.set(true);
+        fetch('https://api.allorigins.win/raw?url=https://zenquotes.io/api/quotes/')
+            .then(response => response.json())
+            .then(data => quotes.set(list => [...list, ...data]))
+            .catch(error => console.error('Error fetching quotes:', error))
+            .finally(() => setTimeout(() => isLoading.set(false), 1000));
+    }
+
+    isLoading.watch(({ data }) => {
+        const btn = document.getElementById('loadMoreBtn');
+        btn.innerHTML = data ? 'Loading...' : 'Load more';
+        btn.disabled = data;
+    });
+
+    quotes.watchChange(({ data }) => {
+        document.getElementById('totalQuotes').innerHTML = `(${data.length})`;
+
+        const pagination = document.getElementById('pagination');
+        if (data.length === 0) {
+            pagination.innerHTML = '';
+        }
+
+        const pageLength = data.length / perPage;
+
+        // pagination -> start
+        pagination.innerHTML = '';
+        for (let index = 0; index < pageLength; index++) {
+            const btnId = `btn-${index}`;
+            const btn = document.createElement('button');
+            btn.id = btnId;
+            btn.className = selectedPage.value === index ? 'btn btn-primary' : 'btn btn-outline-primary';
+            btn.innerHTML = index + 1;
+            btn.onclick = () => selectedPage.set(index);
+            pagination.appendChild(btn);
+        }
+        // pagination -> end
+
+        if (selectedPage.value >= pageLength && pageLength > 0) {
+            selectedPage.set(pageLength - 1);
+        } else {
+            selectedPage.triggerFx();
+        }
+
+    }, true);
+
+    selectedPage.watch(({ data }) => {
+        const btnId = `btn-${data}`;
+
+        document.querySelectorAll('#pagination button').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+        });
+
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.classList.add('btn-primary');
+            btn.classList.remove('btn-outline-primary');
+        }
+
+        const start = data * perPage;
+        currentQuotes.set(quotes.value.slice(start, start + perPage));
+
+    }, true);
+
+    currentQuotes.watchChange(({ data }) => {
+
+        const listQuotes = document.getElementById('listQuotes');
+        if (data.length === 0) {
+            listQuotes.innerHTML = '<li class="list-group-item text-center">No quotes found</li>';
+        } else {
+            listQuotes.innerHTML = '';
+        }
+        data.forEach((quote, index) => {
+            const itemNo = selectedPage.value * perPage + index + 1;
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerHTML = `<div class="d-flex justify-content-between align-items-start">
+                    <span>${itemNo}. ${quote.h}</span>
+                    <button onclick="removeQuote(${index})" class="btn btn-danger btn-sm rounded-pill py-1 px-2">x</button>
+                </div>`;
+            listQuotes.appendChild(li);
+        });
+    }, true);
+
+    function removeQuote(index) {
+        quotes.set(list => list.filter((_, i) => i !== (selectedPage.value * perPage + index)));
+    }
+
+
+</script>
+
+</html>
