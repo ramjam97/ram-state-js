@@ -1,5 +1,5 @@
 /*!
- * RamStateJs JavaScript Library v1.5.1
+ * RamStateJs JavaScript Library v1.6.0
  * https://github.com/ramjam97/ram-state-js
  * Date: 2024-08-05
  * 
