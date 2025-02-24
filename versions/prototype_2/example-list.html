@@ -23,10 +23,21 @@
 
                 <div class="d-flex flex-wrap justify-content-center gap-1" id="pagination"></div>
 
-                <div class="text-center">
-                    <button class="btn btn-primary" type="button" id="loadMoreBtn" onclick="fetchQuotes()">Load
+                <div class="d-flex flex-row flex-wrap justify-content-between">
+                    <div class="d-flex gap-1 align-items-center flex-row text-nowrap">
+                        <label class="col-form-label">Entries:</label>
+                        <select id="perPage.data" class="form-select" onchange="perPage.set(parseInt(this.value))">
+                            <option value="2">2</option>
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" type="button" id="loadMoreBtn" onclick="fetchQuotes()">Load
                         more</button>
                 </div>
+
             </div>
         </div>
 
@@ -38,7 +49,7 @@
     const quotes = new RamState([]);
     const currentQuotes = new RamState([]);
     const selectedPage = new RamState(0);
-    const perPage = 5;
+    const perPage = new RamState(5);
 
     function fetchQuotes() {
         isLoading.set(true);
@@ -55,7 +66,9 @@
         btn.disabled = data;
     });
 
-    quotes.watchChange(({ data }) => {
+    perPage.onChange(() => quotes.trigger());
+
+    quotes.onChange(({ data }) => {
         document.getElementById('totalQuotes').innerHTML = `(${data.length})`;
 
         const pagination = document.getElementById('pagination');
@@ -63,7 +76,7 @@
             pagination.innerHTML = '';
         }
 
-        const pageLength = data.length / perPage;
+        const pageLength = data.length / perPage.data;
 
         // pagination -> start
         pagination.innerHTML = '';
@@ -71,17 +84,17 @@
             const btnId = `btn-${index}`;
             const btn = document.createElement('button');
             btn.id = btnId;
-            btn.className = selectedPage.value === index ? 'btn btn-primary' : 'btn btn-outline-primary';
+            btn.className = selectedPage.data === index ? 'btn btn-primary' : 'btn btn-outline-primary';
             btn.innerHTML = index + 1;
             btn.onclick = () => selectedPage.set(index);
             pagination.appendChild(btn);
         }
         // pagination -> end
 
-        if (selectedPage.value >= pageLength && pageLength > 0) {
+        if (selectedPage.data >= pageLength && pageLength > 0) {
             selectedPage.set(pageLength - 1);
         } else {
-            selectedPage.triggerFx();
+            selectedPage.trigger();
         }
 
     }, true);
@@ -100,12 +113,12 @@
             btn.classList.remove('btn-outline-primary');
         }
 
-        const start = data * perPage;
-        currentQuotes.set(quotes.value.slice(start, start + perPage));
+        const start = data * perPage.data;
+        currentQuotes.set(quotes.data.slice(start, start + perPage.data));
 
-    }, true);
+    });
 
-    currentQuotes.watchChange(({ data }) => {
+    currentQuotes.onChange(({ data }) => {
 
         const listQuotes = document.getElementById('listQuotes');
         if (data.length === 0) {
@@ -113,22 +126,31 @@
         } else {
             listQuotes.innerHTML = '';
         }
+
         data.forEach((quote, index) => {
-            const itemNo = selectedPage.value * perPage + index + 1;
+            const itemNo = selectedPage.data * perPage.data + index + 1;
+
             const li = document.createElement('li');
             li.className = 'list-group-item';
-            li.innerHTML = `<div class="d-flex justify-content-between align-items-start">
-                    <span>${itemNo}. ${quote.h}</span>
-                    <button onclick="removeQuote(${index})" class="btn btn-danger btn-sm rounded-pill py-1 px-2">x</button>
-                </div>`;
+
+            const div = document.createElement('div');
+            div.className = 'd-flex justify-content-between align-items-start';
+
+            const span = document.createElement('span');
+            span.innerHTML = `${itemNo}. ${quote.h}`;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-danger btn-sm rounded-pill py-1 px-3';
+            btn.innerHTML = 'x';
+            btn.onclick = () => quotes.set(list => list.filter((_, i) => i !== (selectedPage.data * perPage.data + index)));
+
+            div.appendChild(span);
+            div.appendChild(btn);
+            li.appendChild(div);
+
             listQuotes.appendChild(li);
         });
     }, true);
-
-    function removeQuote(index) {
-        quotes.set(list => list.filter((_, i) => i !== (selectedPage.value * perPage + index)));
-    }
-
 
 </script>
 

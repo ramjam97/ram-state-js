@@ -54,9 +54,9 @@ class RamState {
         }
 
         // Always trigger set effects, conditionally trigger change effects
-        this.#runSetFx();
+        this.#runAllSetFx();
         if (this.#hasChange) {
-            this.#runChangeFx();
+            this.#runAllChangeFx();
         }
     }
 
@@ -69,7 +69,6 @@ class RamState {
 
     // Aliases for get()
     get data() { return this.get(); }
-    get value() { return this.get(); }
     get hasChange() { return this.#hasChange; }
 
     /** Get current state version number */
@@ -77,86 +76,74 @@ class RamState {
 
     /**
      * Subscribe to all set() operations (even if no change occurred)
-     * @param {Function} callback - Receives {hasChange, current, version}
+     * @param {Function} callback - Receives {hasChange, data, version}
      * @param {boolean} executeOnInit - Immediately invoke with current state
      */
-    onSetFx(callback, executeOnInit = false) {
+    onSet(callback, executeOnInit = false) {
         if (typeof callback === 'function') {
             this.#onSetEffectsList.push(callback);
             if (executeOnInit) {
                 try {
                     // Compare current state with initial state for hasChange
-                    callback({
-                        hasChange: !this.#isEqual(this.#data, this.#initialData),
-                        data: this.#data,
-                        version: this.#version
-                    });
+                    callback(this.#getSetFxCallbackProps());
                 } catch (error) {
-                    console.error('Error in initial uponSet callback:', error);
+                    console.error('Error in initial onSet callback:', error);
                 }
             }
         } else {
-            console.warn('Callback provided to uponSet is not a function');
+            console.warn('Callback provided to onSet is not a function');
         }
-    }
-
-    // Alias for uponSet
-    watch(callback, executeOnInit = false) {
-        return this.onSetFx(callback, executeOnInit);
     }
 
     /**
      * Subscribe to state changes (only triggered when state actually changes)
-     * @param {Function} callback - Receives {current, version}
+     * @param {Function} callback - Receives {data, version}
      * @param {boolean} executeOnInit - Immediately invoke with current state
      */
-    onChangeFx(callback, executeOnInit = false) {
+    onChange(callback, executeOnInit = false) {
         if (typeof callback === 'function') {
             this.#onChangeEffectsList.push(callback);
             if (executeOnInit) {
                 try {
-                    callback({
-                        data: this.#data,
-                        version: this.#version
-                    });
+                    callback(this.#getChangeFxCallbackProps());
                 } catch (error) {
-                    console.error('Error in initial uponChange callback:', error);
+                    console.error('Error in initial onChange callback:', error);
                 }
             }
         } else {
-            console.warn('Callback provided to uponChange is not a function');
+            console.warn('Callback provided to onChange is not a function');
         }
     }
 
-    // Aliases for uponChange
-    watchChange(callback, executeOnInit = false) { return this.onChangeFx(callback, executeOnInit); }
-    watchChanges(callback, executeOnInit = false) { return this.onChangeFx(callback, executeOnInit); }
-
+    // Alias for uponSet
+    watch(callback) {
+        return this.onSet(callback, true);
+    }
 
     /**
-     * Trigger effects manually. Can specify 'set' or 'change' effects.
-     * @param {string} fx - Type of effects to trigger ('set' or 'change')
+     * Trigger effects manually. an specify 'set' or 'change' effects.C
+     * @param {string} hasChange - maniually set hasChange flag, null = will return na current hasChange value
      */
-    triggerFx(hasChange = null) {
-        this.triggerSetFx(hasChange);
+    trigger(hasChange = null) {
+        this.triggerSet(hasChange);
         if (this.#hasChange) {
-            this.triggerChangeFx();
+            this.triggerChange();
         }
     }
 
     /**
      * Trigger set effects manually.
      */
-    triggerSetFx(hasChange = null) {
+    triggerSet(hasChange = null) {
         this.#hasChange = (hasChange === null) ? this.#hasChange : Boolean(hasChange);
-        this.#runSetFx();
+        this.#runAllSetFx();
     }
 
     /**
      * Trigger change effects manually.
      */
-    triggerChangeFx() {
-        this.#runChangeFx();
+    triggerChange() {
+        this.#runAllChangeFx();
     }
 
     /**
@@ -177,10 +164,27 @@ class RamState {
         }
 
         this.#data = newData;
-        this.#runSetFx();
+        this.#runAllSetFx();
 
         if (this.#hasChange) {
-            this.#runChangeFx();
+            this.#runAllChangeFx();
+        }
+    }
+
+    // set effects callback props 
+    #getSetFxCallbackProps() {
+        return {
+            hasChange: this.#hasChange,
+            data: this.#data,
+            version: this.#version
+        }
+    }
+
+    // change effects callback props 
+    #getChangeFxCallbackProps() {
+        return {
+            data: this.#data,
+            version: this.#version
         }
     }
 
@@ -188,16 +192,12 @@ class RamState {
      * Trigger all set subscriptions (called on every set()) 
      * @private
      */
-    #runSetFx() {
+    #runAllSetFx() {
         this.#onSetEffectsList.forEach(callback => {
             try {
-                callback({
-                    hasChange: this.#hasChange,
-                    data: this.#data,
-                    version: this.#version
-                });
+                callback(this.#getSetFxCallbackProps());
             } catch (error) {
-                console.error('Error in uponSet callback:', error);
+                console.error('Error in onSet callback:', error);
             }
         });
     }
@@ -206,15 +206,12 @@ class RamState {
      * Trigger all change subscriptions (called only when state changes) 
      * @private
      */
-    #runChangeFx() {
+    #runAllChangeFx() {
         this.#onChangeEffectsList.forEach(callback => {
             try {
-                callback({
-                    data: this.#data,
-                    version: this.#version
-                });
+                callback(this.#getChangeFxCallbackProps());
             } catch (error) {
-                console.error('Error in uponChange callback:', error);
+                console.error('Error in onChange callback:', error);
             }
         });
     }

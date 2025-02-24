@@ -68,7 +68,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <span id="version"></span>
                         <button type="button" class="btn btn-sm btn-primary"
-                            onclick="rPerson.triggerFx()">Trigger Effects</button>
+                            onclick="rPerson.trigger()">Trigger Effects</button>
 
                         <button onclick="console.log(rPerson.data)" class="btn btn-sm btn-primary">Get Data</button>
 
@@ -88,7 +88,7 @@
         const rPerson = new RamState({});
 
         let counter = 0;
-        rPerson.onSetFx(context => {
+        rPerson.onSet(context => {
             counter += 1;
             console.log('------------------------------------');
             console.log('Counter:', counter);
