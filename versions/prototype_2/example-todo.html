@@ -9,8 +9,20 @@
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
     <!-- ram-state cdn -->
-    <script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/1.5.1/ram-state.min.js"></script>
+    <script src="./ram-state.js"></script>
 
+    <style>
+        .task-title {
+            cursor: pointer;
+            background-color: rgb(185, 185, 185, 0.1);
+            padding: 0 5px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #5d5d5d;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,6 +38,7 @@
                         </div>
                     </form>
                     <div>
+                        <h5>Completed: <span id="complatedCount"></span>/<span id="totalCount"></span></h5>
                         <ul class="list-group" id="taskList"></ul>
                     </div>
                 </div>
@@ -36,15 +49,29 @@
 
     <script>
 
-        const rTaskList = new RamState(['coding']);
+        const taskList = new RamState([]);
+        taskList.set(list => [...list, {
+            task: 'Learn RamState',
+            isDone: false
+        }]);
 
-        rTaskList.uponChange(context => {
-            document.getElementById('taskList').innerHTML = context.current.map((item, i) => {
-                return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center">
-                    <span>${item}</span>
-                    <button class="btn btn-danger" onclick="removeTask(${i})">x</button>
+        taskList.onChange(({ data }) => {
+
+            document.getElementById('complatedCount').innerHTML = data.filter(item => item.isDone).length;
+            document.getElementById('totalCount').innerHTML = data.length;
+
+            document.getElementById('taskList').innerHTML = data.map((item, i) => {
+                return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center px-2">
+                        <div>
+                            <span>${i + 1}.</span>
+                            <span class="task-title ${item.isDone && 'completed'}" onclick="toggleDone(${i})">
+                                ${item.task}
+                            </span>
+                        </div>
+                        <button class="btn btn-danger" onclick="removeTask(${i})">x</button>
                     </li>`;
             }).join('');
+
         }, true);
 
         const formTask = document.getElementById('taskForm');
@@ -52,15 +79,23 @@
         formTask.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            if (formTask['task'].value.trim() === '') return;
+            const val = formTask['task'].value.trim();
+            if (val === '') return;
 
-            rTaskList.set(list => [...list, formTask['task'].value.trim()]);
+            taskList.set(list => [...list, {
+                task: val,
+                isDone: false
+            }]);
 
             formTask.reset();
         });
 
+        function toggleDone(ind) {
+            taskList.set(list => list.map((item, i) => i === ind ? { ...item, isDone: !item.isDone } : item));
+        }
+
         function removeTask(ind) {
-            rTaskList.set(list => list.filter((item, i) => i !== ind));
+            taskList.set(list => list.filter((item, i) => i !== ind));
         }
 
     </script>

@@ -1,123 +1,123 @@
 # RamStateJs JavaScript Library
 
-**Version: 1.5.1**  
-**GitHub Repository:** [RamStateJs](https://github.com/ramjam97/ram-state-js)  
-**Release Date:** 2024-08-05  
+## Overview
 
-RamStateJs is a lightweight state management library for Vanilla JavaScript with deep cloning, change detection, and subscription-based updates. Handles complex data types `Set`, `Map`, `Date`, `RegExp`, and circular references.
+RamStateJs is a lightweight state management library for Vanilla JavaScript, offering deep cloning, change detection, and subscription-based updates. It supports complex data types such as `Set`, `Map`, `Date`, and `RegExp`, while also handling circular references.
+
+**Version:** 1.6.0\
+**Repository:** [GitHub](https://github.com/ramjam97/ram-state-js)\
+**Release Date:** 2024-08-05
 
 ## Features
-- Deep cloning to prevent unintended mutations.
-- State change detection with optimized updates.
-- Subscription-based state watching (`uponSet`, `uponChange`).
-- Supports complex data types (Set, Map, Date, RegExp).
-- Handles circular references.
-- Aliases for commonly used methods (`watch`, `watchChange`).
 
-## Script Tag
+- **Deep Cloning**: Ensures state integrity by preventing external mutations.
+- **Change Detection**: Updates are tracked efficiently with a version counter.
+- **Subscription-Based Updates**: Callbacks for both `set()` operations and actual state changes.
+- **Complex Data Type Support**: Handles `Set`, `Map`, `Date`, `RegExp`, and circular references.
+- **Manual Effect Triggers**: Allows manual invocation of state-based effects.
+
+## Installation
+
+Include the script directly in your project:
+
 ```html
 <script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/1.5.1/ram-state.min.js"></script>
 ```
 
 ## Usage
+
 ### Creating a State Instance
+
 ```js
 const counter = new RamState(0);
 ```
 
-### Setting the State
+### Setting a Value
+
 ```js
-counter.set(10); // Updates state to 10
-```
-Using a function to update state:
-```js
-counter.set(prev => prev + 1); // Increments the state
+counter.set(5);
+counter.set(val => val + 1); // Functional update
 ```
 
-### Getting the State
+### Getting a Value
+
 ```js
-console.log(counter.get()); // 11
-console.log(counter.value); // 11
-console.log(counter.current); // 11
+console.log(counter.get()); // 6
+console.log(counter.data);  // 6 (Alias for get())
 ```
 
-### Watching for Any Set Operation
+### Watching for Updates
+
 ```js
-counter.uponSet(({ hasChange, current, previous, version }) => {
-    console.log(`Version: ${version}, Changed: ${hasChange}`);
-    console.log(`Previous: ${previous}, Current: ${current}`);
+counter.onSet(({ hasChange, data, version }) => {
+    console.log(`State updated: ${data} (Version: ${version}, Changed: ${hasChange})`);
+});
+
+counter.onChange(({ data, version }) => {
+    console.log(`State changed: ${data} (Version: ${version})`);
 });
 ```
-Alias:
-```js
-counter.watch(callback);
-```
 
-### Watching for State Changes Only
-```js
-counter.uponChange(({ current, previous, version }) => {
-    console.log(`State changed to: ${current}, Previous: ${previous}, Version: ${version}`);
-});
-```
-Aliases:
-```js
-counter.watchChange(callback);
-counter.watchChanges(callback);
-```
+### Resetting State
 
-### Resetting the State
 ```js
 counter.reset(); // Resets to initial value
-counter.reset(5); // Resets to 5
+counter.reset(10); // Sets new initial value
+```
+
+### Triggering Effects Manually
+
+```js
+counter.trigger();      // Triggers both set and change effects
+counter.triggerSet();   // Triggers only set effects
+counter.triggerChange(); // Triggers only change effects
 ```
 
 ## API Reference
-### `set(value | function)`
-Updates the state. Accepts a direct value or a function that returns the new state.
 
-### `get()` / `value` / `current`
-Returns a deep clone of the current state.
+### `new RamState(initialData)`
 
-### `version`
-Returns the current version number of the state.
+Creates a new state instance with the provided initial value.
 
-### `uponSet(callback, executeOnInit = false)`
-Subscribes to all `set()` operations, even if no actual change occurs. Callback receives an object:
-```js
-{
-    hasChange: boolean,
-    current: any,
-    previous: any,
-    version: number
-}
-```
-Alias: `watch(callback, executeOnInit)`
+### `.set(valueOrUpdater)`
 
-### `uponChange(callback, executeOnInit = false)`
-Subscribes only when the state actually changes. Callback receives:
-```js
-{
-    current: any,
-    previous: any,
-    version: number
-}
-```
-Aliases: `watchChange(callback, executeOnInit)`, `watchChanges(callback, executeOnInit)`
+Updates the state with a new value or a function `(prevState) => newState`.
 
-### `triggerEffects(fx = null | '' | 'set' | 'change')`
-Manually triggers effects associated with the state. Useful for re-running effects after external changes.
+### `.get()` or `.data`
 
-- If `fx` is equal to `'set'`, it triggers only the set side effects.
-- If `fx` is equal to `'change'`, it triggers only the change side effects.
+Retrieves the current state as a deep clone.
 
-### `triggerSetEffects()`
-Manually triggers set side effects, equivalent to `triggerEffects('set')`.
+### `.onSet(callback, executeOnInit = false)`
 
-### `triggerChangeEffects()`
-Manually triggers change side effects, equivalent to `triggerEffects('change')`.
+Subscribes to all `set()` calls, even if no change occurs.
 
-### `reset(newData = null)`
-Resets state to initial value or provided value. Triggers `uponSet` and `uponChange` appropriately.
+- `callback({ hasChange, data, version })`
+- `executeOnInit` (optional) immediately invokes the callback with the current state.
 
-## Links
-- [GitHub Repository](https://github.com/ramjam97/ram-state-js)
+### `.onChange(callback, executeOnInit = false)`
+
+Subscribes to actual state changes.
+
+- `callback({ data, version })`
+- `executeOnInit` (optional) immediately invokes the callback with the current state.
+
+### `.reset(newData = null)`
+
+Resets the state to its initial value or a provided new value.
+
+### `.trigger(hasChange = null)`
+
+Manually triggers both `set` and `change` effects.
+
+### `.triggerSet(hasChange = null)`
+
+Manually triggers `set` effects.
+
+### `.triggerChange()`
+
+Manually triggers `change` effects.
+
+---
+
+For more details, visit the official [GitHub repository](https://github.com/ramjam97/ram-state-js). 🚀
+

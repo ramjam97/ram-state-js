@@ -9,7 +9,7 @@
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
     <!-- ram-state cdn -->
-    <script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/1.5.1/ram-state.min.js"></script>
+    <script src="./ram-state.js"></script>
 
 </head>
 
@@ -34,8 +34,8 @@
     <script>
         const rCounter = new RamState(0);
 
-        rCounter.uponChange(context => {
-            const count = context.current;
+        rCounter.onChange(({ data }) => {
+            const count = data;
             document.getElementById('countBtn').innerHTML = count;
             document.getElementById('textCount').innerHTML = count;
         }, true);

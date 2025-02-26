@@ -53,11 +53,11 @@ class RamState {
             this.#version += 1;     // Increment version on change
         }
 
-        // Always trigger set effects, conditionally trigger change effects
         this.#runAllSetFx();
         if (this.#hasChange) {
             this.#runAllChangeFx();
         }
+
     }
 
     /** 

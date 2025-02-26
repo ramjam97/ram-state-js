@@ -9,7 +9,7 @@
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
     <!-- ram-state cdn -->
-    <script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/1.5.1/ram-state.min.js"></script>
+    <script src="./ram-state.js"></script>
 
 </head>
 
@@ -33,8 +33,8 @@
 
         const rToggle = new RamState(true);
 
-        rToggle.uponChange(context => {
-            const val = context.current;
+        rToggle.onChange(({ data }) => {
+            const val = data;
             document.getElementById('toggleBtn').innerHTML = val ? 'OPEN' : 'CLOSE';
             document.getElementById('greetings').style = val ? 'display:block;' : 'display:none;';
         }, true);
