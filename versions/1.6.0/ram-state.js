@@ -1,7 +1,7 @@
 /*!
  * RamStateJs JavaScript Library v1.6.0
  * https://github.com/ramjam97/ram-state-js
- * Date: 2024-08-05
+ * Date: 2025-02-27
  * 
  * A lightweight state management library for Vanilla JavaScript with deep cloning, change detection,
  * and subscription-based updates. Handles complex data types (Set/Map/Date/RegExp)
