@@ -6,7 +6,7 @@ RamStateJs is a lightweight state management library for Vanilla JavaScript, off
 
 **Version:** 1.6.0\
 **Repository:** [GitHub](https://github.com/ramjam97/ram-state-js)\
-**Release Date:** 2024-08-05
+**Release Date:** 2025-02-27
 
 ## Features
 
