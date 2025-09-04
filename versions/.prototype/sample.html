@@ -67,7 +67,8 @@
 
             <div x-data="{ count: 0 }">
                 <button x-on:click="count++">Increment</button>
-                <span x-text="count"></span>
+                <span x-text="`c-${count}`"></span>
+                <button x-on:click="count--">Decrement</button>
             </div>
 
             <div style="display: flex;flex-direction: row;gap: .25rem;">
@@ -102,8 +103,6 @@
                 <h5>List</h5>
                 <ul id="list"></ul>
             </div>
-
-            <span>${a}</span>
 
         </div>
 

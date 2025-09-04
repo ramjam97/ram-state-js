@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./ram-state.js"></script>
+</head>
+
+<body>
+    <h1>RamState Version 1</h1>
+
+    <button id="btn">Click me 1</button>
+    <button id="btn2">Click me 2</button>
+
+    <input type="text" id="input">
+
+    <p>Your name is <span id="labelName"></span></p>
+</body>
+
+<script>
+
+    const { useState, useEffect } = RamState();
+
+    const count = useState(0);
+    const count2 = useState(0);
+    const task = useState('');
+
+    // count.set(v => v + 1);
+
+    document.getElementById('btn').addEventListener('click', () => count.set(v => v + 1));
+    document.getElementById('btn2').addEventListener('click', () => count2.set(v => v + 1));
+    document.getElementById('input').addEventListener('input', (e) => task.set(e.target.value));
+
+    count.watchEffect((cntxt) => {
+        console.log("count:", cntxt);
+        document.getElementById('btn').textContent = `Click me ${cntxt.data}`;
+    });
+
+    task.watchEffect(({ data }) => {
+        document.getElementById('labelName').textContent = data;
+    }, true);
+
+    useEffect(() => {
+        console.log("Runs only once at mount");
+
+    }, []);
+
+    useEffect(() => {
+        console.log("Runs on every set()");
+    });
+
+    useEffect((data) => {
+        console.log("Runs when count changes:", count.get());
+        return () => console.log("Runs on unmount", count.get());
+    }, [count, task]);
+
+
+</script>
+
+</html>
