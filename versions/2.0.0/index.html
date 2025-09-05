@@ -34,12 +34,15 @@
     document.getElementById('btn2').addEventListener('click', () => count2.set(v => v + 1));
     document.getElementById('input').addEventListener('keypress', (e) => {
 
-        task.set(e.target.value);
+        if (e.target.value.trim() !== '') {
 
-        if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            task.set('');
-            todo.set(list => [...list, e.target.value]);
-            e.target.value = '';
+            task.set(e.target.value);
+
+            if (e.key === 'Enter') {
+                task.set('');
+                todo.set(list => [...list, e.target.value]);
+                e.target.value = '';
+            }
         }
 
     });
@@ -58,7 +61,6 @@
     }
 
     count.watchEffect((cntxt) => {
-        console.log("count:", cntxt);
         document.getElementById('btn').textContent = `Btn1 ${cntxt.data}`;
     }, true);
 
@@ -78,13 +80,13 @@
         console.log("Runs on every set()");
     });
 
-    useEffect((data) => {
-        console.log("Runs when count changes:", count.get());
-        return () => console.warn("Runs on unmount", count.get());
-    }, [count, task]);
+    useEffect(() => {
+        console.log("Runs when count,count2, task changes:");
+        return () => console.warn("Runs on unmount");
+    }, [count, count2, task]);
 
-    useEffect((data) => {
-        console.log("Runs when count changes 2nd:", count.get());
+    useEffect(() => {
+        console.log("Runs when count changes:", count.get());
     }, [count]);
 
 
