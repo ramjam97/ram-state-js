@@ -13,10 +13,12 @@
  *                   execute a side effect function when the state changes.
  */
 function RamState() {
+
     const allStates = new Set();
     const globalEffects = [];
 
     function useState(initialValue) {
+
         let data = initialValue;
 
         const sideEffect = {
@@ -93,7 +95,9 @@ function RamState() {
         let cleanup;
         function run() {
             if (typeof cleanup === "function") {
-                try { cleanup(); } catch (err) {
+                try {
+                    cleanup();
+                } catch (err) {
                     console.error("RamState cleanup error:", err);
                 }
             }

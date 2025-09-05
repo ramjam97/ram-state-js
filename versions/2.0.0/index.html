@@ -11,12 +11,14 @@
 <body>
     <h1>RamState Version 1</h1>
 
-    <button id="btn">Click me 1</button>
-    <button id="btn2">Click me 2</button>
+    <button id="btn">Btn1</button>
+    <button id="btn2">Btn2</button>
 
     <input type="text" id="input">
 
-    <p>Your name is <span id="labelName"></span></p>
+    <p>Task: <span id="task"></span></p>
+
+    <ul id="taskList"></ul>
 </body>
 
 <script>
@@ -26,25 +28,50 @@
     const count = useState(0);
     const count2 = useState(0);
     const task = useState('');
-
-    // count.set(v => v + 1);
+    const todo = useState([]);
 
     document.getElementById('btn').addEventListener('click', () => count.set(v => v + 1));
     document.getElementById('btn2').addEventListener('click', () => count2.set(v => v + 1));
-    document.getElementById('input').addEventListener('input', (e) => task.set(e.target.value));
+    document.getElementById('input').addEventListener('keypress', (e) => {
+
+        task.set(e.target.value);
+
+        if (e.key === 'Enter' && e.target.value.trim() !== '') {
+            task.set('');
+            todo.set(list => [...list, e.target.value]);
+            e.target.value = '';
+        }
+
+    });
+
+    todo.watchEffect(({ data }) => {
+        document.getElementById('taskList').innerHTML = data.map((item, i) => {
+            return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center">
+                <span>${item}</span>
+                <button class="btn btn-danger" onclick="removeTask(${i})">x</button>
+            </li>`;
+        }).join('');
+    }, true);
+
+    const removeTask = (ind) => {
+        todo.set(list => list.filter((item, i) => i !== ind));
+    }
 
     count.watchEffect((cntxt) => {
         console.log("count:", cntxt);
-        document.getElementById('btn').textContent = `Click me ${cntxt.data}`;
-    });
+        document.getElementById('btn').textContent = `Btn1 ${cntxt.data}`;
+    }, true);
+
+    count2.watch(cntxt => {
+        document.getElementById('btn2').textContent = `Btn2 ${cntxt.data}`;
+    }, true);
 
     task.watchEffect(({ data }) => {
-        document.getElementById('labelName').textContent = data;
+        document.getElementById('task').textContent = data;
     }, true);
 
     useEffect(() => {
         console.log("Runs only once at mount");
-
     }, []);
 
     useEffect(() => {
@@ -53,7 +80,7 @@
 
     useEffect((data) => {
         console.log("Runs when count changes:", count.get());
-        return () => console.log("Runs on unmount", count.get());
+        return () => console.warn("Runs on unmount", count.get());
     }, [count, task]);
 
 
