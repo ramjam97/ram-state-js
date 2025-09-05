@@ -57,10 +57,10 @@
     const { useState, useEffect } = RamState();
 
     const todo = useState([]);
-    const filter = useState('all');
+    const filterBy = useState('all');
 
     document.getElementById('filterSelect').addEventListener('change', function (e) {
-        filter.set(e.target.value);
+        filterBy.set(e.target.value);
     });
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
@@ -102,30 +102,26 @@
         document.getElementById('todoCount').innerHTML = `${totalCompleted}/${todo.get().length}`;
 
         let filteredList = [...todo.get()].filter(item => {
-            const filterBy = filter.get();
-            if (filterBy === 'completed') {
-                return item.completed;
-            }
-            if (filterBy === 'ongoing') {
-                return !item.completed;
-            }
+            if (filterBy.get() === 'completed') return item.completed;
+            if (filterBy.get() === 'ongoing') return !item.completed;
             return true;
         });
 
         if (filteredList.length > 0) {
-            document.getElementById('todoList').innerHTML = filteredList.map(item => {
-                return `<li class="list-group-item d-flex justify-content-between">
-                <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
-                    ${item.id}.  ${item.task}
-                </span> 
-                <button class="btn-close" onclick="removeTask(${item.id})"></button>
-            </li>`;
-            }).join('');
+            document.getElementById('todoList').innerHTML = filteredList
+                .map(item => {
+                    return `<li class="list-group-item d-flex justify-content-between">
+                        <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
+                            ${item.id}.  ${item.task}
+                        </span> 
+                        <button class="btn-close" onclick="removeTask(${item.id})"></button>
+                    </li>`;
+                }).join('');
         } else {
             document.getElementById('todoList').innerHTML = `<li class="list-group-item">No task yet</li>`
         }
 
-    }, [todo, filter]);
+    }, [todo, filterBy]);
 
 
 </script>
