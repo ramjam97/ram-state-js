@@ -1,6 +1,6 @@
 /**
  * RamStateJs JavaScript Library v2.0.0
- * https://github.com/ramjam97/ram-state-js
+ * https://github.com/ramjam97/ram-state-js/blob/master/versions/2.0.0/ram-state.min.js
  *
  * @returns {Object} An object with two methods: `useState` and `useEffect`.
  *                   `useState` is a function to create a new state instance
