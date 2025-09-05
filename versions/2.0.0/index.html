@@ -47,8 +47,8 @@
     todo.watchEffect(({ data }) => {
         document.getElementById('taskList').innerHTML = data.map((item, i) => {
             return `<li class="list-group-item d-flex justify-content-between gap-2 align-items-center">
-                <span>${item}</span>
                 <button class="btn btn-danger" onclick="removeTask(${i})">x</button>
+                <span>${item}</span>
             </li>`;
         }).join('');
     }, true);
@@ -82,6 +82,10 @@
         console.log("Runs when count changes:", count.get());
         return () => console.warn("Runs on unmount", count.get());
     }, [count, task]);
+
+    useEffect((data) => {
+        console.log("Runs when count changes 2nd:", count.get());
+    }, [count]);
 
 
 </script>

@@ -1,11 +1,6 @@
 /**
  * RamStateJs JavaScript Library v2.0.0
  * https://github.com/ramjam97/ram-state-js
- * 
- * RamState is a lightweight state management library for Vanilla JavaScript
- * with deep cloning, change detection, and subscription-based updates.
- * It supports complex data types such as Set, Map, Date, RegExp, and
- * circular references.
  *
  * @returns {Object} An object with two methods: `useState` and `useEffect`.
  *                   `useState` is a function to create a new state instance
@@ -49,7 +44,7 @@ function RamState() {
                 );
             }
 
-            // ✅ simplified
+            // global watchers
             globalEffects.forEach(({ run, deps }) => {
                 if (deps === null) {
                     run();
@@ -115,23 +110,27 @@ function RamState() {
     }
 
     // helpers
-    function isEqual(a, b) {
+    const isEqual = (a, b) => {
+
         if (a === b) return true;
         if (typeof a !== typeof b) return false;
 
         if (Array.isArray(a) && Array.isArray(b)) {
             return a.length === b.length && a.every((v, i) => isEqual(v, b[i]));
         }
+
         if (a && b && typeof a === "object") {
             const keysA = Object.keys(a);
             const keysB = Object.keys(b);
             if (keysA.length !== keysB.length) return false;
             return keysA.every(k => isEqual(a[k], b[k]));
         }
+
         return false;
     }
 
-    function safeRun(cb, payload) {
+    // helpers
+    const safeRun = (cb, payload) => {
         try {
             cb(payload);
         } catch (err) {
