@@ -25,31 +25,23 @@
 
         <h1 class="text-center text-primary">RamState Demo</h1>
 
-        <br>
-        <div class="d-flex flex-column justify-content-center align-items-center gap-2">
+        <h4 class="text-center mb-3">TODO</h4>
 
-            <h5>TODO</h5>
+        <!-- Input -->
+        <input type="text" class="form-control border border-secondary mb-2" placeholder="Enter task" id="inputTask">
 
-            <div class="col-md-6">
-                <input type="text" class="form-control border border-secondary" placeholder="Enter task" id="inputTask">
-            </div>
-
-            <div class="col-md-6 d-flex flex-row justify-content-between align-items-center">
-                <b>Count: <span id="todoCount"></span></b>
-                <div class="col-md-3">
-                    <select class="form-select form-select-sm" id="filterSelect">
-                        <option value="all">All</option>
-                        <option value="completed">Completed</option>
-                        <option value="ongoing">Ongoing</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <ul class="list-group" id="todoList"></ul>
-            </div>
-
+        <!-- Controls -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <b>Count: <span id="todoCount"></span></b>
+            <select class="form-select w-auto" onchange="filterBy.set(this.value)">
+                <option value="all">All</option>
+                <option value="ongoing">Todo</option>
+                <option value="completed">Completed</option>
+            </select>
         </div>
+
+        <!-- Task list -->
+        <ul id="todoList" class="list-group"></ul>
 
     </div>
 </body>
@@ -59,19 +51,11 @@
     const todo = useState([]);
     const filterBy = useState('all');
 
-    document.getElementById('filterSelect').addEventListener('change', function (e) {
-        filterBy.set(e.target.value);
-    });
-
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
-        const val = e.target.value;
-        if (e.key === 'Enter' && val?.trim() !== '') {
-
-            const lastId = ([...todo.get()].pop())?.id || 0;
-
+        if (e.key === 'Enter' && e.target.value?.trim() !== '') {
             todo.set(list => [...list, {
-                id: lastId + 1,
-                task: val,
+                id: ((todo.get().at(-1)?.id) || 0) + 1,
+                task: e.target.value.trim(),
                 completed: false
             }]);
             e.target.value = '';
@@ -83,23 +67,14 @@
     }
 
     function toggleCompleted(id) {
-        todo.set(list => list.map(item => {
-            if (item.id === id) {
-                return {
-                    ...item,
-                    ...{ completed: !item.completed }
-                };
-            }
-            return item;
-        }));
+        todo.set(list => list.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
     }
-
 
     useEffect(() => {
 
         const totalCompleted = todo.get().filter(item => item.completed).length;
 
-        document.getElementById('todoCount').innerHTML = `${totalCompleted}/${todo.get().length}`;
+        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.get().length}`;
 
         let filteredList = [...todo.get()].filter(item => {
             if (filterBy.get() === 'completed') return item.completed;
@@ -107,22 +82,16 @@
             return true;
         });
 
-        if (filteredList.length > 0) {
-            document.getElementById('todoList').innerHTML = filteredList
-                .map(item => {
-                    return `<li class="list-group-item d-flex justify-content-between">
-                        <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
-                            ${item.id}.  ${item.task}
-                        </span> 
-                        <button class="btn-close" onclick="removeTask(${item.id})"></button>
-                    </li>`;
-                }).join('');
-        } else {
-            document.getElementById('todoList').innerHTML = `<li class="list-group-item">No task yet</li>`
-        }
+        document.getElementById("todoList").innerHTML = filteredList.length ?
+            filteredList.map(item => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
+                        ${item.id}. ${item.task}
+                    </span>
+                    <button class="btn-close" onclick="removeTask(${item.id})"></button>
+                </li>`).join('') : `<li class="list-group-item text-muted">No tasks</li>`;
 
     }, [todo, filterBy]);
-
 
 </script>
 
