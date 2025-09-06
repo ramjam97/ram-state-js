@@ -1,6 +1,6 @@
 # RamStateJs v2.0.0
 
-A lightweight state management library for JavaScript inspired by React's `useState` and `useEffect` APIs.
+A lightweight state management library for Vanilla JavaScript inspired by React's `useState` and `useEffect` APIs.
 
 ## Repository
 https://github.com/ramjam97/ram-state-js/blob/master/versions/2.0.0/ram-state.min.js
