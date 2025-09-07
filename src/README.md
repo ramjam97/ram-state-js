@@ -3,7 +3,7 @@
 
 Lightweight state management library for **vanilla JavaScript**.
 
-Version: 1.0.0  
+Version: 2.0.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -36,7 +36,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v1.0.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.0.0/dist/ram-state.min.js"></script>
 ```
 
 
