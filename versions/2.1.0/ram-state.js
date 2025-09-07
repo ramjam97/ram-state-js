@@ -1,104 +1,22 @@
+
 /**
- * RamStateJs JavaScript Library v2.0.0
- * https://github.com/ramjam97/ram-state-js/blob/master/versions/2.0.0/ram-state.min.js
+ * RamStateJs JavaScript Library v2.1.0
+ * https://github.com/ramjam97/ram-state-js/blob/master/versions/2.1.0/ram-state.min.js
+ *
+ * RamState is a lightweight state management library designed specifically for vanilla JavaScript.
+ * It provides a simple and efficient way to manage and update state without the need for additional frameworks.
+ * It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
  *
  * @returns {Object} An object with two methods: `useState` and `useEffect`.
- *                   `useState` is a function to create a new state instance
- *                   with an initial value. `useEffect` is a function to
- *                   execute a side effect function when the state changes.
+ *                   `useState` is a function to create a new state instance with an initial value.
+ *                   `useEffect` is a function to execute a side effect function when the state changes.
  */
 function RamState() {
 
     const allStates = new Set();
     const globalEffects = [];
 
-    function useState(initialValue) {
-
-        let data = initialValue;
-
-        const sideEffect = {
-            always: [],
-            onChange: []
-        };
-
-        function get() {
-            return data;
-        }
-
-        function set(value) {
-
-            if (typeof value === "function") {
-                value = value(data);
-            }
-
-            const hasChange = !isEqual(data, value);
-            data = value;
-
-            // local watchers (always)
-            sideEffect.always.forEach(w => {
-                if (typeof w.cleanup === "function") {
-                    safeRunCleanUp(w.cleanup);
-                }
-                w.cleanup = safeRun(w.cb, { data, hasChange });
-            });
-
-            // local watchers (onChange only if value changed)
-            if (hasChange) {
-                sideEffect.onChange.forEach(w => {
-                    if (typeof w.cleanup === "function") {
-                        safeRunCleanUp(w.cleanup);
-                    }
-                    w.cleanup = safeRun(w.cb, { data });
-                });
-            }
-
-            // global watchers
-            globalEffects.forEach(({ run, deps }) => {
-                if (deps === null) {
-                    run();
-                } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
-                    run();
-                }
-                // deps === [] -> skip (already ran once at mount)
-            });
-
-            return data;
-        }
-
-        function watch(cb, executeOnMount = false) {
-
-            if (typeof cb !== "function") {
-                console.warn("watch callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.always.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, { data, hasChange: false });
-            }
-
-        }
-
-        function watchEffect(cb, executeOnMount = false) {
-            if (typeof cb !== "function") {
-                console.warn("watchEffect callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.onChange.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, { data });
-            }
-        }
-
-        const stateAPI = { get, set, watch, watchEffect };
-        allStates.add(stateAPI);
-
-        return stateAPI;
-    }
-
-
-    function useDomState(initialValue, selector = null) {
+    function useState(initialValue, selector = null) {
 
         let data = initialValue;
 
@@ -125,16 +43,12 @@ function RamState() {
             });
         }
 
+
         function get() {
             return data;
         }
 
         function set(value) {
-
-            // if (element?.disabled) {
-            //     console.log("Element is disabled");
-            //     return;
-            // }
 
             if (typeof value === "function") {
                 value = value(data);
@@ -209,7 +123,6 @@ function RamState() {
         return stateAPI;
     }
 
-
     function useEffect(cb, deps = null) {
         if (typeof cb !== "function") {
             console.warn("useEffect callback must be a function");
@@ -230,7 +143,6 @@ function RamState() {
         // ✅ always run once at mount
         run();
     }
-
 
     // 🔹 Helper: extract value from input/select/checkbox
     const extractDomValue = (el) => {
@@ -270,8 +182,6 @@ function RamState() {
             el.value = value ?? "";
         }
     }
-
-
 
     // helpers
     const isEqual = (a, b) => {
@@ -314,5 +224,5 @@ function RamState() {
 
     console.log("RamState initialized 🚀");
 
-    return { useState, useDomState, useEffect };
+    return { useState, useEffect };
 }

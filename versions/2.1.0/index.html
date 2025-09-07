@@ -16,7 +16,8 @@
 
         <h1 class="text-center text-primary">RamState Demo</h1>
 
-        <input type="text" id="elem">
+        <!-- <input type="text" id="elem"> -->
+        <textarea name="" id="elem"></textarea>
         <button class="btn btn btn-primary" id="addName">Add Name</button>
 
         <label>
@@ -24,17 +25,27 @@
             <span>Disabled</span>
         </label>
 
+
+        <div class="col-md-6">
+            <select id="mySelect" class="form-select" multiple>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+        </div>
+
     </div>
 
 </body>
 
 <script>
-    const { useState, useDomState, useEffect } = RamState();
+    const { useState, useEffect } = RamState();
 
     const counter = useState(0);
 
-    const name = useDomState('', '#elem');
-    const cbox = useDomState(true, '#cb');
+    const name = useState('', '#elem');
+    const cbox = useState(true, '#cb');
+    const mySelect = useState(1, '#mySelect');
 
     document.querySelector('#addName').addEventListener('click', () => {
         name.set(v => v + '1');
@@ -45,6 +56,12 @@
     }, true);
 
     cbox.watchEffect(({ data }) => document.getElementById('elem').disabled = data, true);
+
+    mySelect.watchEffect(({ data }) => {
+
+        console.log('mySelect:', data);
+
+    }, true);
 
 </script>
 
