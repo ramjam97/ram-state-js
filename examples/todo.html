@@ -7,8 +7,9 @@
     <title>Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@master/versions/2.0.0/ram-state.min.js"></script>
 
+    <!-- ramstatejs -->
+    <script src="../dist/ram-state.min.js"></script>
     <style>
         .cursor-pointer {
             cursor: pointer;
@@ -20,44 +21,44 @@
     </style>
 </head>
 
-<body>
-    <div class="container pt-3">
+<body class="container pt-3">
 
-        <h1 class="text-center text-primary">RamState Demo</h1>
+    <h1 class="text-center text-primary">RamStateJs Demo</h1>
 
-        <h4 class="text-center mb-3">TODO</h4>
+    <h4 class="text-center mb-3">TODO</h4>
 
-        <!-- Input -->
-        <input type="text" class="form-control border border-secondary mb-2" placeholder="Enter task" id="inputTask">
+    <!-- Input -->
+    <input type="text" class="form-control border border-secondary mb-2" placeholder="Enter task" id="inputTask">
 
-        <!-- Controls -->
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <b>Count: <span id="todoCount"></span></b>
-            <select class="form-select w-auto" onchange="filterBy.set(this.value)">
-                <option value="all">All</option>
-                <option value="ongoing">Todo</option>
-                <option value="completed">Completed</option>
-            </select>
-        </div>
-
-        <!-- Task list -->
-        <ul id="todoList" class="list-group"></ul>
-
+    <!-- Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <b>Count: <span id="todoCount"></span></b>
+        <select class="form-select w-auto" id="filterBy">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+        </select>
     </div>
+
+    <!-- Task list -->
+    <ul id="todoList" class="list-group"></ul>
+
 </body>
 <script>
     const { useState, useEffect } = RamState();
 
     const todo = useState([]);
-    const filterBy = useState('all');
+    const filterBy = useState('active', "#filterBy");
+    const id = useState(1);
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
             todo.set(list => [...list, {
-                id: ((todo.get().at(-1)?.id) || 0) + 1,
+                id: id.get(),
                 task: e.target.value.trim(),
                 completed: false
             }]);
+            id.set(v => v + 1);
             e.target.value = '';
         }
     });
@@ -77,8 +78,8 @@
         document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.get().length}`;
 
         let filteredList = [...todo.get()].filter(item => {
+            if (filterBy.get() === 'active') return !item.completed;
             if (filterBy.get() === 'completed') return item.completed;
-            if (filterBy.get() === 'ongoing') return !item.completed;
             return true;
         });
 
@@ -89,7 +90,8 @@
                         ${item.id}. ${item.task}
                     </span>
                     <button class="btn-close" onclick="removeTask(${item.id})"></button>
-                </li>`).join('') : `<li class="list-group-item text-muted">No tasks</li>`;
+                </li>`).join('')
+            : `<li class="list-group-item text-muted">No tasks</li>`;
 
     }, [todo, filterBy]);
 

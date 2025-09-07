@@ -1,0 +1,18 @@
+{
+  "name": "RamStateJs",
+  "version": "2.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js"
+  },
+  "keywords": [],
+  "author": "Ram Jam",
+  "license": "ISC",
+  "git": "https://github.com/ramjam97/ram-state-js",
+  "description": "RamStateJs is a lightweight state management library designed specifically for vanilla JavaScript.",
+  "type": "module",
+  "devDependencies": {
+    "terser": "^5.44.0"
+  }
+}
