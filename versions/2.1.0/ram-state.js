@@ -1,11 +1,10 @@
-
 /**
  * RamStateJs JavaScript Library v2.1.0
  * https://github.com/ramjam97/ram-state-js/blob/master/versions/2.1.0/ram-state.min.js
  *
  * RamState is a lightweight state management library designed specifically for vanilla JavaScript.
  * It provides a simple and efficient way to manage and update state without the need for additional frameworks.
- * It supports both direct and functional updates, offers easy state retrieval, allows side effects to be triggered on state changes, and includes version tracking.
+ * It supports both direct and functional updates, offers easy state retrieval and allows side effects to be triggered on state changes.
  *
  * @returns {Object} An object with two methods: `useState` and `useEffect`.
  *                   `useState` is a function to create a new state instance with an initial value.
