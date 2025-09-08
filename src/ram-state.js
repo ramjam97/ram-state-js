@@ -1,7 +1,11 @@
 function RamState() {
 
+    // Keep track of all states
     const allStates = new Set();
     const globalEffects = [];
+
+
+    // GLOBAL HELPER ------> START
 
     // HELPER: deep equality
     const isEqual = (a, b) => {
@@ -43,7 +47,11 @@ function RamState() {
         }
     }
 
+    // GLOBAL HELPER ------> END
 
+
+
+    // API: useState
     function useState(initialValue, selector = null) {
 
         let data = initialValue;
@@ -196,10 +204,12 @@ function RamState() {
         allStates.add(stateAPI);
 
         return stateAPI;
-    }
+
+    } // useState() end
 
     // API: global watcher
     function useEffect(cb, deps = null) {
+
         if (typeof cb !== "function") {
             console.warn("useEffect callback must be a function");
             return;
@@ -221,7 +231,7 @@ function RamState() {
         * deps === []
         */
         run();
-    }
+    } // useEffect() end
 
     console.log("RamState initialized 🚀");
 
