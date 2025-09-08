@@ -11,8 +11,8 @@ Author: Ram Jam
 
 ## 📌 Introduction
 
-RamStateJs provides a simple and efficient way to manage state in plain JavaScript applications.  
-It is inspired by React's `useState` and `useEffect` but works natively with DOM elements.
+RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.
+
 
 - Supports direct and functional updates
 - Works with inputs, selects, textareas, and checkboxes
@@ -161,7 +161,7 @@ Returns an object:
 - `.set(value | fn)` → update value (direct or functional)
 - `.watch(cb, executeOnMount?)` → runs on every `.set()`
 - `.watchEffect(cb, executeOnMount?)` → runs only when value changes
-
+- `.dom` → bound DOM element (if any)
 ---
 
 ### `useEffect(cb, deps?)`

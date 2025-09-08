@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ramstatejs -->
+    <script src="../dist/ram-state.min.js"></script>
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .completed {
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+
+<body class="container pt-3">
+
+    <h1 class="text-center text-primary">RamStateJs Demo</h1>
+
+    <h4 class="text-center mb-3">FORM</h4>
+
+
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form id="formData">
+                        <div class="form-group mb-3">
+                            <label class="form-label">Firstname</label>
+                            <input type="text" class="form-control" name="firstname">
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Lastname</label>
+                            <input type="text" class="form-control" name="lastname">
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" name="dob">
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="" disabled>select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">
+                                <input type="checkbox" class="form-check-input" name="completed">
+                                Completed
+                            </label>
+                        </div>
+
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <pre id="preview" class="bg-light"></pre>
+        </div>
+
+    </div>
+
+</body>
+
+<script>
+
+    const { useState, useEffect } = RamState();
+
+    const firstName = useState('ram', '#formData input[name="firstname"]');
+    const lastName = useState('jam', '#formData input[name="lastname"]');
+    const dob = useState('2025-09-08', '#formData input[name="dob"]');
+    const gender = useState('male', '#formData select[name="gender"]');
+    const completed = useState(false, '#formData input[name="completed"]');
+
+
+    console.log('firstName:', firstName);
+
+    completed.watchEffect(({ data, hasChange, dom }) => {
+        console.log(data, dom);
+    }, true);
+
+    useEffect(() => {
+
+        document.getElementById('preview').innerHTML = JSON.stringify({
+            firstName: firstName.get(),
+            lastName: lastName.get(),
+            birthDate: dob.get(),
+            gender: gender.get(),
+            completed: completed.get()
+        }, null, 2);
+
+    }, [firstName, lastName, dob, gender, completed]);
+
+</script>
+
+</html>
