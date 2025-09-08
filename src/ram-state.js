@@ -194,7 +194,7 @@ function RamState() {
     const safeRun = (cb, payload) => {
         try {
             const result = payload ? cb(payload) : cb()
-            return result ? result : null;
+            return typeof result === 'function' ? result : null;
         } catch (err) {
             console.error("RamState callback error:", err);
             return null;
