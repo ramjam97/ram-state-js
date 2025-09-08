@@ -36,9 +36,7 @@
 
     const counter = useState(0);
 
-    counter.watchEffect(v => {
-        document.getElementById("counter").innerHTML = v.data
-    }, true);
+    counter.watchEffect(v => document.getElementById("counter").innerHTML = v.data, true);
 
 </script>
 

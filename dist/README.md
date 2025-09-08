@@ -137,6 +137,7 @@ Both local watchers and global effects can return a cleanup function:
 const message = useState("Hello");
 
 message.watchEffect(({ data }) => {
+  
   const interval = setInterval(() => {
     console.log("Repeating:", data);
   }, 1000);

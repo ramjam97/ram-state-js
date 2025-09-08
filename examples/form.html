@@ -91,12 +91,6 @@
     const gender = useState('male', '#formData select[name="gender"]');
     const completed = useState(false, '#formData input[name="completed"]');
 
-    console.log('firstName:', firstName);
-
-    completed.watchEffect(({ data, hasChange, dom }) => {
-        console.log(data, dom);
-    }, true);
-
     useEffect(() => {
 
         document.getElementById('preview').innerHTML = JSON.stringify({
