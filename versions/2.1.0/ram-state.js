@@ -6,10 +6,12 @@
  */
 function RamState() {
 
+    // library version
+    const version = 'v2.1.0';
+
     // Keep track of all states
     const allStates = new Set();
     const globalEffects = [];
-
 
     // GLOBAL HELPER ------> START
 
@@ -239,7 +241,7 @@ function RamState() {
         run();
     } // useEffect() end
 
-    console.log("RamState initialized 🚀");
+    console.log(`RamState ${version} initialized 🚀`);
 
     return { useState, useEffect };
 }
