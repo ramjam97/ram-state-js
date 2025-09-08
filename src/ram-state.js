@@ -1,7 +1,7 @@
-function RamState() {
+function RamState(opt = {}) {
 
     // library version
-    const version = 'v2.1.0';
+    const version = "v2.1.0";
 
     // Keep track of all states
     const allStates = new Set();
@@ -235,7 +235,9 @@ function RamState() {
         run();
     } // useEffect() end
 
-    console.log(`RamState ${version} initialized 🚀`);
+    if (opt.debug ?? true) {
+        console.log(`RamState ${version} initialized 🚀`);
+    }
 
     return { useState, useEffect };
 }
