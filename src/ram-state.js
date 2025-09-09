@@ -244,15 +244,37 @@ function RamState(opt = {}) {
 
     // API: useButton
 
-    function useButton(selectorOrDOM) {
+    function useButton(selectorOrDOM, opt = {}) {
 
-        const dom = getDomElements();
+        // HELPER: build options structure
+        const options = {
+            state: {
+                disabled: opt?.state?.disabled ?? false,
+                loading: opt?.state?.loading ?? false
+            },
+            loading: {
+                html: opt?.loading?.html ?? "",
+                icon: opt?.loading?.icon ?? ""
+            }
+        }
 
+        // API: get DOM elements
+        const dom = [...getDomElements(selectorOrDOM)].map(item => {
+            return {
+                el: item,
+                defaultHtml: item.innerHTML,
+                loadingHtml: options.loading.html || item.innerHTML,
+                loadingIcon: options.loading.icon
+            }
+        });
+
+        // HELPER: init state object
         let state = {
-            disabled: false,
-            loading: false,
+            disabled: options.state.disabled,
+            loading: options.state.loading,
         };
 
+        // HELPER: side effects placeholder
         const sideEffect = {
             always: [],
             onChange: []
@@ -270,11 +292,16 @@ function RamState(opt = {}) {
         // API: setters
         const loading = (isLoading = true) => set({ ...state, ...{ loading: isLoading, disabled: isLoading } });
 
+        // HELPER: update DOM
         const updateRender = (stateData) => {
-            dom.forEach(elem => {
-                elem.disabled = stateData?.disabled || stateData?.loading;
-                elem.classList.toggle("loading", stateData?.loading);
-                elem.classList.toggle("disabled", stateData?.disabled);
+            dom.forEach(item => {
+
+                const { el, defaultHtml, loadingHtml, loadingIcon } = item;
+
+                el.disabled = stateData.disabled || stateData.loading;
+                el.classList.toggle("loading", stateData.loading);
+                el.classList.toggle("disabled", stateData.disabled);
+                el.innerHTML = (stateData.loading ? loadingHtml : defaultHtml) + (stateData.loading ? loadingIcon : '');
             });
         }
 
@@ -329,6 +356,12 @@ function RamState(opt = {}) {
             if (executeOnMount) {
                 watcher.cleanup = safeRun(cb, getWatchParams(false));
             }
+            return () => {
+                if (watcher.cleanup) {
+                    safeRunCleanUp(watcher.cleanup);
+                }
+                sideEffect.always = sideEffect.always.filter(w => w !== watcher);
+            }
         }
 
         // API: local watcher when data changes
@@ -342,26 +375,29 @@ function RamState(opt = {}) {
             if (executeOnMount) {
                 watcher.cleanup = safeRun(cb, getWatchEffectParams());
             }
+            return () => {
+                if (watcher.cleanup) {
+                    safeRunCleanUp(watcher.cleanup);
+                }
+                sideEffect.onChange = sideEffect.onChange.filter(w => w !== watcher);
+            }
         }
 
 
         // HELPER: get DOM elements and return as array of elements
         function getDomElements() {
-            if (selectorOrDOM instanceof HTMLElement) return selectorOrDOM;
+            if (selectorOrDOM instanceof HTMLElement) return [selectorOrDOM];
             if (typeof selectorOrDOM === "string") return Array.from(document.querySelectorAll(selectorOrDOM));
-            return null;
+            return [];
         }
 
         const get = () => state;
 
-        return {
-            dom,
-            get,
-            disabled,
-            loading,
-            watch,
-            watchEffect
-        }
+        const stateAPI = { dom, get, disabled, loading, watch, watchEffect };
+
+        allStates.add(stateAPI);
+
+        return stateAPI;
 
     } // useButton() end
 

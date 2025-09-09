@@ -41,21 +41,39 @@
 
     // console.log('dom:', document.querySelector('#sample'));
 
-    const sample = useButton('#sample');
-    console.log('sample.dom', sample.dom);
-    
+    const sample = useButton('#sample', {
+        loading: {
+            html: 'Loading',
+            icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>',
+        }
+    });
+
+    sample.watchEffect(v => {
+
+        console.table('isLoading:', v.state.loading);
+
+        const a = v.state.loading;
+        return () => {
+            console.table('cleanup isLoading:', a);
+        }
+    }, true);
+
+    useEffect(() => {
+        console.log('useEffect', sample.get());
+    }, [sample]);
+
 
     document.getElementById('sample').addEventListener('click', function (e) {
 
-        console.log({
-            dom: sample.dom,
-            get: sample.get(),
-        });
+        const { loading } = useButton(e.target);
 
-        sample.loading();
+        loading();
+        // sample.loading();
         setTimeout(() => {
-            sample.loading(false);
-        }, 1000);
+            // sample.loading(false);
+            loading(false);
+        }, 3000);
+
     });
 
 </script>
