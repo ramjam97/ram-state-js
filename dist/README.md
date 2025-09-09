@@ -3,7 +3,7 @@
 
 Lightweight state management library for **vanilla JavaScript**.
 
-Version: 2.1.0  
+Version: 2.2.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 

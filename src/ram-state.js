@@ -1,7 +1,7 @@
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.1.0";
+    const version = "v2.2.0";
 
     // Keep track of all states
     const allStates = new Set();
@@ -235,9 +235,151 @@ function RamState(opt = {}) {
         run();
     } // useEffect() end
 
-    if (opt.debug ?? true) {
-        console.log(`RamState ${version} initialized 🚀`);
-    }
 
-    return { useState, useEffect };
+
+
+
+
+
+
+    // API: useButton
+
+    function useButton(selectorOrDOM) {
+
+        const dom = getDomElements();
+
+        let state = {
+            disabled: false,
+            loading: false,
+        };
+
+        const sideEffect = {
+            always: [],
+            onChange: []
+        };
+
+        // HELPER: Generate watch parameters
+        const getWatchParams = hasChange => ({ dom, state, hasChange });
+
+        // HELPER: Generate watch effects parameters
+        const getWatchEffectParams = () => ({ dom, state });
+
+        // API: setters
+        const disabled = (isDisabled = true) => set({ ...state, ...{ disabled: isDisabled } });
+
+        // API: setters
+        const loading = (isLoading = true) => set({ ...state, ...{ loading: isLoading, disabled: isLoading } });
+
+        const updateRender = (stateData) => {
+            dom.forEach(elem => {
+                elem.disabled = stateData?.disabled || stateData?.loading;
+                elem.classList.toggle("loading", stateData?.loading);
+                elem.classList.toggle("disabled", stateData?.disabled);
+            });
+        }
+
+        // HELPER: setters
+        function set(value) {
+
+            const hasChange = !isEqual(state, value);
+            state = value;
+
+            // State → DOM
+            updateRender(state);
+
+            // local watchers (always)
+            sideEffect.always.forEach(w => {
+                if (typeof w.cleanup === "function") {
+                    safeRunCleanUp(w.cleanup);
+                }
+                w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
+            });
+
+            // local watchers (onChange only if value changed)
+            if (hasChange) {
+                sideEffect.onChange.forEach(w => {
+                    if (typeof w.cleanup === "function") {
+                        safeRunCleanUp(w.cleanup);
+                    }
+                    w.cleanup = safeRun(w.cb, getWatchEffectParams());
+                });
+            }
+
+            // global watchers
+            globalEffects.forEach(({ run, deps }) => {
+                if (deps === null) {
+                    run();
+                } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
+                    run();
+                }
+                // deps === [] -> skip (already ran once at mount)
+            });
+
+            return state;
+        }
+
+        // API: local watcher for setters
+        function watch(cb, executeOnMount = false) {
+            if (typeof cb !== "function") {
+                console.warn("watch callback must be a function");
+                return;
+            }
+            const watcher = { cb, cleanup: null };
+            sideEffect.always.push(watcher);
+            if (executeOnMount) {
+                watcher.cleanup = safeRun(cb, getWatchParams(false));
+            }
+        }
+
+        // API: local watcher when data changes
+        function watchEffect(cb, executeOnMount = false) {
+            if (typeof cb !== "function") {
+                console.warn("watchEffect callback must be a function");
+                return;
+            }
+            const watcher = { cb, cleanup: null };
+            sideEffect.onChange.push(watcher);
+            if (executeOnMount) {
+                watcher.cleanup = safeRun(cb, getWatchEffectParams());
+            }
+        }
+
+
+        // HELPER: get DOM elements and return as array of elements
+        function getDomElements() {
+            if (selectorOrDOM instanceof HTMLElement) return selectorOrDOM;
+            if (typeof selectorOrDOM === "string") return Array.from(document.querySelectorAll(selectorOrDOM));
+            return null;
+        }
+
+        const get = () => state;
+
+        return {
+            dom,
+            get,
+            disabled,
+            loading,
+            watch,
+            watchEffect
+        }
+
+    } // useButton() end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);
+
+    return { useState, useEffect, useButton };
 }
