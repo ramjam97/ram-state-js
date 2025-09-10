@@ -13,6 +13,7 @@ Author: Ram Jam
 
 RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.
 
+RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, DOM binding, and button states — inspired by React’s ``useState`` and ``useEffect``.
 
 - Supports direct and functional updates
 - Works with inputs, selects, textareas, and checkboxes
@@ -20,6 +21,7 @@ RamStateJs is a lightweight state management library for vanilla JavaScript. It 
 - Watchers for local effects
 - Global effects with dependency tracking
 - Cleanup support
+- ``useButton`` for button state handling (loading, disabled)
 - Lightweight, no dependencies
 
 ---
@@ -63,7 +65,7 @@ console.log(counter.get()); // 5
 Functional updates:
 
 ```js
-counter.set(prev => prev + 1);
+counter.set(v => v + 1);
 ```
 
 ---
@@ -125,6 +127,13 @@ useEffect(() => {
 useEffect(() => {
   console.log("First changed:", first.get());
 }, [first]);
+
+// runs only when `first` and `second` changes
+useEffect(() => {
+  console.log("First changed:", first.get());
+  console.log("Second changed:", second.get());
+}, [first, second]);
+
 ```
 
 ---
@@ -149,6 +158,36 @@ message.watchEffect(({ data }) => {
 
 ---
 
+### 6. Button State (useButton)
+
+```html
+<button id="submitBtn">Submit</button>
+```
+
+```js
+const btn = useButton("#submitBtn", {
+  state: { disabled: false, loading: false },
+  loading: { html: "Loading...", icon: "⏳" }
+});
+
+// disable button
+btn.disabled(true);
+
+// enable loading state
+btn.loading(true);
+
+// watch changes
+btn.watch(({ state }) => {
+  console.log("Button state changed:", state);
+});
+
+```
+- Automatically toggles ``disabled`` and ``loading`` 
+- Replaces button inner HTML when loading 
+- Provides watchers just like ``useState`` 
+
+---
+
 ## 🔑 API Reference
 
 ### `useState(initialValue, selector?)`
@@ -164,6 +203,27 @@ Returns an object:
 - `.watchEffect(cb, executeOnMount?)` → runs only when value changes
 - `.dom` → bound DOM element (if any)
 ---
+
+### `useButton(selectorOrDOM, options?)`
+Manages button state (loading, disabled).
+
+- `selectorOrDOM`: CSS selector or DOM element(s)  
+- `options`: 
+  - `state.disabled`: initial disabled state  
+  - `state.loading`: initial loading state  
+  - `disabled.class`: classname for disabled state, default ``disabled``  
+  - `loading.class`: classname for loading state, default ``loading``
+  - `loading.html`: HTML/text to show while loading  
+  - `loading.icon`: icon to append while loading  
+
+Returns:
+- `.dom`: → return array of elements from ``querySelectorAll`` 
+- `.get()`: → get current button state
+- ``.disabled(bool)`` → enable/disable button
+- ``.loading(bool)`` → enable/disable button with loading indicator
+- `.watch(cb, executeOnMount?)` → runs on every `.disabled()` and ``.loading()``
+- `.watchEffect(cb, executeOnMount?)` → runs only when value changes
+
 
 ### `useEffect(cb, deps?)`
 Registers a global side effect.

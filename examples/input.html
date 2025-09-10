@@ -23,9 +23,13 @@
 
 <body class="container pt-3">
 
-    <h1 class="text-center text-primary">RamStateJs Demo</h1>
-
-    <input type="text" class="form-control" id="text" placeholder="type here">
+    <div class="d-flex justify-content-center">
+        <div class="col-md-6 d-flex flex-column gap-2">
+            <h1 class="text-center text-primary">RamStateJs Demo</h1>
+            <input type="text" class="form-control" id="text" placeholder="type here">
+            <h5>Text: <span id="textContent"></span></h5>
+        </div>
+    </div>
 
 </body>
 
@@ -35,10 +39,10 @@
 
     const textInput = useState('', '#text');
 
+    textInput.watchEffect(v => document.getElementById("textContent").innerHTML = v.data, true);
+
     useEffect(() => {
-
         console.log('text:', textInput.get());
-
     }, [textInput]);
 
 </script>

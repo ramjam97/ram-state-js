@@ -241,15 +241,7 @@ function RamState(opt = {}) {
         run();
     } // useEffect() end
 
-
-
-
-
-
-
-
     // API: useButton
-
     function useButton(selectorOrDOM, opt = {}) {
 
         // HELPER: build options structure
@@ -258,21 +250,39 @@ function RamState(opt = {}) {
                 disabled: opt?.state?.disabled ?? false,
                 loading: opt?.state?.loading ?? false
             },
+            disabled: {
+                class: opt?.disabled?.class ?? "disabled",
+            },
             loading: {
                 html: opt?.loading?.html ?? "",
-                icon: opt?.loading?.icon ?? ""
+                icon: opt?.loading?.icon ?? "",
+                class: opt?.loading?.class ?? "loading",
             }
         }
 
-        // API: get DOM elements
-        const dom = [...getDomElements(selectorOrDOM)].map(item => {
+        // API: DOM elements with state and default attributes
+        const elements = [...getDomElements(selectorOrDOM)].map(item => {
+
+            if (typeof options.loading.html === 'function') options.loading.html = options.loading.html(item.innerHTML);
+
             return {
                 el: item,
-                defaultHtml: item.innerHTML,
-                loadingHtml: options.loading.html || item.innerHTML,
-                loadingIcon: options.loading.icon
+                default: {
+                    html: item.innerHTML
+                },
+                loading: {
+                    html: options.loading.html || item.innerHTML,
+                    icon: options.loading.icon,
+                    class: options.loading.class
+                },
+                disabled: {
+                    class: options.disabled.class
+                }
             }
         });
+
+        // API: get DOM elements
+        const dom = elements.map(item => item.el);
 
         // HELPER: init state object
         let state = {
@@ -300,14 +310,19 @@ function RamState(opt = {}) {
 
         // HELPER: update DOM
         const updateRender = (stateData) => {
-            dom.forEach(item => {
+            elements.forEach(item => {
 
-                const { el, defaultHtml, loadingHtml, loadingIcon } = item;
+                const { el } = item;
+
+                const configDefault = item.default;
+                const configLoading = item.loading;
+                const configDisabled = item.disabled;
 
                 el.disabled = stateData.disabled || stateData.loading;
-                el.classList.toggle("loading", stateData.loading);
-                el.classList.toggle("disabled", stateData.disabled);
-                el.innerHTML = (stateData.loading ? loadingHtml : defaultHtml) + (stateData.loading ? loadingIcon : '');
+                el.classList.toggle(configLoading.class, stateData.loading);
+                el.classList.toggle(configDisabled.class, stateData.disabled);
+                el.innerHTML = (stateData.loading ? configLoading.html : configDefault.html)
+                    + (stateData.loading ? configLoading.icon : '');
             });
         }
 
@@ -362,12 +377,6 @@ function RamState(opt = {}) {
             if (executeOnMount) {
                 watcher.cleanup = safeRun(cb, getWatchParams(false));
             }
-            return () => {
-                if (watcher.cleanup) {
-                    safeRunCleanUp(watcher.cleanup);
-                }
-                sideEffect.always = sideEffect.always.filter(w => w !== watcher);
-            }
         }
 
         // API: local watcher when data changes
@@ -380,12 +389,6 @@ function RamState(opt = {}) {
             sideEffect.onChange.push(watcher);
             if (executeOnMount) {
                 watcher.cleanup = safeRun(cb, getWatchEffectParams());
-            }
-            return () => {
-                if (watcher.cleanup) {
-                    safeRunCleanUp(watcher.cleanup);
-                }
-                sideEffect.onChange = sideEffect.onChange.filter(w => w !== watcher);
             }
         }
 
@@ -406,19 +409,6 @@ function RamState(opt = {}) {
         return stateAPI;
 
     } // useButton() end
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);

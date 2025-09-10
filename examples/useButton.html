@@ -27,7 +27,7 @@
                 <button class="btn btn-primary" onclick="counter.set(v => v+1)">+</button>
             </span>
 
-            <button id="sample" class="btn btn-info">Sample</button>
+            <button id="sample" class="btn btn-info">Click me!</button>
 
         </div>
 
@@ -39,39 +39,35 @@
     const counter = useState(0);
     counter.watchEffect(v => document.getElementById("counter").innerHTML = v.data, true);
 
-    // console.log('dom:', document.querySelector('#sample'));
-
-    const sample = useButton('#sample', {
-        loading: {
-            html: 'Loading',
-            icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>',
-        }
+    const btns = useButton('.btn', {
+        loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
     });
 
-    sample.watchEffect(v => {
-
-        console.table('isLoading:', v.state.loading);
-
-        const a = v.state.loading;
-        return () => {
-            console.table('cleanup isLoading:', a);
-        }
+    btns.watchEffect(v => {
+        console.table('watchEffect isDisabled:', v.state.disabled);
+        const a = v.state.disabled;
+        return () => console.table('watchEffect Cleanup isDisabled:', a);
     }, true);
 
     useEffect(() => {
-        console.log('useEffect', sample.get());
-    }, [sample]);
-
+        console.log('useEffect', btns.get());
+        const a = btns.get();
+        return () => console.table('useEffect Cleanup:', a);
+    }, [btns]);
 
     document.getElementById('sample').addEventListener('click', function (e) {
 
-        const { loading } = useButton(e.target);
+        const { loading } = useButton(e.target, {
+            loading: {
+                icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>',
+            }
+        });
 
+        btns.disabled();
         loading();
-        // sample.loading();
         setTimeout(() => {
-            // sample.loading(false);
             loading(false);
+            btns.disabled(false);
         }, 3000);
 
     });
