@@ -38,7 +38,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.1.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.2.0/dist/ram-state.min.js"></script>
 ```
 
 
