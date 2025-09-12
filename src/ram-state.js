@@ -406,9 +406,7 @@ function RamState(opt = {}) {
         const getWatchEffectParams = () => ({ value: memoizedValue });
 
         function compute() {
-
-            console.log("computing:");
-
+            
             memoizedValue = factory();
 
             // local watchers
