@@ -1,6 +1,19 @@
 import { minify } from "terser";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 
+// generate timestamp (Asia/Manila)
+const timezone = 'Asia/Manila';
+const timestamp = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+}).format(new Date()).replace(/,/g, "");
+
 const readme = "src/README.md";
 const inputFile = "src/ram-state.js";   // source file
 const distDir = "dist";
@@ -16,6 +29,7 @@ const banner = `/*!
  * Description: ${pkg.description}
  * Author: ${pkg.author}
  * GitHub: ${pkg.git}
+ * Build Date: ${timestamp} (${timezone})
  */`;
 
 // make sure folders exist
@@ -41,7 +55,7 @@ writeFileSync(`${distDir}/README.md`, readmeContent, "utf-8");
 writeFileSync(`${versionDir}/README.md`, readmeContent, "utf-8");
 writeFileSync(`README.md`, readmeContent, "utf-8");
 
-console.log(`✅ Build complete:
+console.log(`✅ Build complete at ${timestamp} (${timezone}):
  - ${distDir}/${fileName}.js
  - ${distDir}/${fileName}.min.js
  - ${distDir}/README.md
