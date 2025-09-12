@@ -57,9 +57,9 @@ const { useState, useEffect } = RamState();
 ```js
 const counter = useState(0);
 
-console.log(counter.get()); // 0
+console.log(counter.value); // 0
 counter.set(5);
-console.log(counter.get()); // 5
+console.log(counter.value); // 5
 ```
 
 Functional updates:
@@ -79,8 +79,8 @@ counter.set(v => v + 1);
 ```js
 const name = useState("", "#nameInput");
 
-name.watch(({ data }) => {
-  console.log("Name updated:", data);
+name.watch(({ value }) => {
+  console.log("Name updated:", value);
 });
 ```
 
@@ -95,13 +95,13 @@ name.watch(({ data }) => {
 const age = useState(18);
 
 // watch → runs on every set
-age.watch(({ data, hasChange }) => {
-  console.log("watch:", data, "changed?", hasChange);
+age.watch(({ value, hasChange }) => {
+  console.log("watch:", value, "changed?", hasChange);
 });
 
 // watchEffect → runs only when value changes
-age.watchEffect(({ data }) => {
-  console.log("watchEffect:", data);
+age.watchEffect(({ value }) => {
+  console.log("watchEffect:", value);
 });
 ```
 
@@ -125,13 +125,13 @@ useEffect(() => {
 
 // runs only when `first` changes
 useEffect(() => {
-  console.log("First changed:", first.get());
+  console.log("First changed:", first.value);
 }, [first]);
 
 // runs only when `first` and `second` changes
 useEffect(() => {
-  console.log("First changed:", first.get());
-  console.log("Second changed:", second.get());
+  console.log("First changed:", first.value);
+  console.log("Second changed:", second.value);
 }, [first, second]);
 
 ```
@@ -145,10 +145,10 @@ Both local watchers and global effects can return a cleanup function:
 ```js
 const message = useState("Hello");
 
-message.watchEffect(({ data }) => {
+message.watchEffect(({ value }) => {
   
   const interval = setInterval(() => {
-    console.log("Repeating:", data);
+    console.log("Repeating:", value);
   }, 1000);
 
   // cleanup
@@ -197,7 +197,7 @@ Creates a state instance.
 - `selector`: optional CSS selector to bind state to a DOM element
 
 Returns an object:
-- `.get()` → get current value
+- `.value` → get current value
 - `.set(value | fn)` → update value (direct or functional)
 - `.watch(cb, executeOnMount?)` → runs on every `.set()`
 - `.watchEffect(cb, executeOnMount?)` → runs only when value changes
@@ -218,7 +218,7 @@ Manages button state (loading, disabled).
 
 Returns:
 - `.dom`: → return array of elements from ``querySelectorAll`` 
-- `.get()`: → get current button state
+- `.value`: → get current button state
 - ``.disabled(bool)`` → enable/disable button
 - ``.loading(bool)`` → enable/disable button with loading indicator
 - `.watch(cb, executeOnMount?)` → runs on every `.disabled()` and ``.loading()``

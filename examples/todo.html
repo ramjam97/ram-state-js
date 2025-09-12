@@ -45,11 +45,35 @@
 
 </body>
 <script>
-    const { useState, useEffect } = RamState();
+    const { useState, useEffect, useMemo } = RamState();
 
     const todo = useState([]);
     const filterBy = useState('active', "#filterBy");
     const id = useState(1);
+
+    const filteredTodo = useMemo(() => {
+        console.log('%cuseMemo', 'color:red', 'is running...');
+        if (filterBy.value === 'all') return todo.value;
+        if (filterBy.value === 'active') return todo.value.filter(item => !item.completed);
+        if (filterBy.value === 'completed') return todo.value.filter(item => item.completed);
+        return [];
+    }, [todo, filterBy]);
+
+    filteredTodo.watchEffect(({ value }) => {
+
+        const totalCompleted = todo.value.filter(item => item.completed).length;
+
+        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.value.length}`;
+        document.getElementById("todoList").innerHTML = value.length ?
+            value.map(item => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
+                        ${item.id}. ${item.task}
+                    </span>
+                    <button class="btn-close" onclick="removeTask(${item.id})"></button>
+                </li>`).join('')
+            : `<li class="list-group-item text-muted">No tasks</li>`;
+    });
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
@@ -70,31 +94,6 @@
     function toggleCompleted(id) {
         todo.set(list => list.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
     }
-
-    useEffect(() => {
-
-        const totalCompleted = todo.value.filter(item => item.completed).length;
-
-        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.value.length}`;
-
-        let filteredList = [...todo.value].filter(item => {
-            if (filterBy.value === 'active') return !item.completed;
-            if (filterBy.value === 'completed') return item.completed;
-            return true;
-        });
-
-        document.getElementById("todoList").innerHTML = filteredList.length ?
-            filteredList.map(item => `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
-                        ${item.id}. ${item.task}
-                    </span>
-                    <button class="btn-close" onclick="removeTask(${item.id})"></button>
-                </li>`).join('')
-            : `<li class="list-group-item text-muted">No tasks</li>`;
-
-    }, [todo, filterBy]);
-
 </script>
 
 </html>
