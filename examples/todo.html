@@ -54,7 +54,7 @@
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
             todo.set(list => [...list, {
-                id: id.get(),
+                id: id.value,
                 task: e.target.value.trim(),
                 completed: false
             }]);
@@ -73,13 +73,13 @@
 
     useEffect(() => {
 
-        const totalCompleted = todo.get().filter(item => item.completed).length;
+        const totalCompleted = todo.value.filter(item => item.completed).length;
 
-        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.get().length}`;
+        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.value.length}`;
 
-        let filteredList = [...todo.get()].filter(item => {
-            if (filterBy.get() === 'active') return !item.completed;
-            if (filterBy.get() === 'completed') return item.completed;
+        let filteredList = [...todo.value].filter(item => {
+            if (filterBy.value === 'active') return !item.completed;
+            if (filterBy.value === 'completed') return item.completed;
             return true;
         });
 

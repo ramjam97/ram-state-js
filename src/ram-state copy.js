@@ -257,9 +257,7 @@ function RamState(opt = {}) {
         // API: DOM elements with state and default attributes
         const elements = [...getDomElements(selectorOrDOM)].map(item => {
 
-            if (typeof options.loading.html === 'function') {
-                options.loading.html = options.loading.html(item.innerHTML);
-            }
+            if (typeof options.loading.html === 'function') options.loading.html = options.loading.html(item.innerHTML);
 
             return {
                 el: item,
@@ -448,6 +446,8 @@ function RamState(opt = {}) {
         return valueAPI;
 
     }// useMemo() end
+
+
 
     if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);
 

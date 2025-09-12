@@ -37,7 +37,7 @@
     const { useState, useEffect, useButton } = RamState();
 
     const counter = useState(0);
-    counter.watchEffect(v => document.getElementById("counter").innerHTML = v.data, true);
+    counter.watchEffect(v => document.getElementById("counter").innerHTML = v.value, true);
 
     const btns = useButton('.btn', {
         loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
@@ -50,8 +50,8 @@
     }, true);
 
     useEffect(() => {
-        console.log('useEffect', btns.get());
-        const a = btns.get();
+        console.log('useEffect', btns.value);
+        const a = btns.value;
         return () => console.table('useEffect Cleanup:', a);
     }, [btns]);
 

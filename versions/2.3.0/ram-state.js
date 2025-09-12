@@ -1,3 +1,10 @@
+/*!
+ * RamStateJs v2.3.0
+ * Description: RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.
+ * Author: Ram Jam
+ * GitHub: https://github.com/ramjam97/ram-state-js
+ * Build: September 12, 2025 at 2:20:10 PM
+ */
 function RamState(opt = {}) {
 
     // library version
@@ -257,9 +264,7 @@ function RamState(opt = {}) {
         // API: DOM elements with state and default attributes
         const elements = [...getDomElements(selectorOrDOM)].map(item => {
 
-            if (typeof options.loading.html === 'function') {
-                options.loading.html = options.loading.html(item.innerHTML);
-            }
+            if (typeof options.loading.html === 'function') options.loading.html = options.loading.html(item.innerHTML);
 
             return {
                 el: item,
@@ -448,6 +453,8 @@ function RamState(opt = {}) {
         return valueAPI;
 
     }// useMemo() end
+
+
 
     if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);
 

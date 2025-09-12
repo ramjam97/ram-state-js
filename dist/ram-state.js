@@ -3,11 +3,12 @@
  * Description: RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.
  * Author: Ram Jam
  * GitHub: https://github.com/ramjam97/ram-state-js
+ * Build Date: 2025-09-12 15:06:13 (Asia/Manila)
  */
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.2.0";
+    const version = "v2.3.0";
 
     // Keep track of all states
     const allStates = new Set();
@@ -49,10 +50,23 @@ function RamState(opt = {}) {
     // HELPER: Run cleanup
     const safeRunCleanUp = (cb) => {
         try {
-            cb();
+            if (typeof cb === "function") cb();
         } catch (err) {
             console.error("RamState cleanup error:", err);
         }
+    }
+
+
+    // HELPER: run global watchers
+    const runGlobalEffects = (stateAPI, hasChange = true) => {
+        globalEffects.forEach(({ run, deps }) => {
+            if (deps === null) {
+                run();
+            } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
+                run();
+            }
+            // deps === [] -> skip (already ran once at mount)
+        });
     }
 
     // GLOBAL HELPER ------> END
@@ -79,89 +93,20 @@ function RamState(opt = {}) {
             // DOM → State
             dom.addEventListener("input", () => {
                 const newVal = extractDomValue(dom);
-                set(newVal);
+                stateAPI.set(newVal);
             });
             dom.addEventListener("change", () => {
                 const newVal = extractDomValue(dom);
-                set(newVal);
+                stateAPI.set(newVal);
             });
         }
 
         // HELPER: Generate watch parameters
-        const getWatchParams = hasChange => ({ dom, data, hasChange });
+        const getWatchParams = hasChange => ({ dom, value: data, hasChange });
 
         // HELPER: Generate watch effects parameters
-        const getWatchEffectParams = () => ({ dom, data });
+        const getWatchEffectParams = () => ({ dom, value: data });
 
-        // API: setters
-        function set(value) {
-
-            if (typeof value === "function") {
-                value = value(data);
-            }
-
-            const hasChange = !isEqual(data, value);
-            data = value;
-
-            // State → DOM
-            if (dom) syncDom(dom, data);
-
-            // local watchers (always)
-            sideEffect.always.forEach(w => {
-                if (typeof w.cleanup === "function") {
-                    safeRunCleanUp(w.cleanup);
-                }
-                w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
-            });
-
-            // local watchers (onChange only if value changed)
-            if (hasChange) {
-                sideEffect.onChange.forEach(w => {
-                    if (typeof w.cleanup === "function") {
-                        safeRunCleanUp(w.cleanup);
-                    }
-                    w.cleanup = safeRun(w.cb, getWatchEffectParams());
-                });
-            }
-
-            // global watchers
-            globalEffects.forEach(({ run, deps }) => {
-                if (deps === null) {
-                    run();
-                } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
-                    run();
-                }
-                // deps === [] -> skip (already ran once at mount)
-            });
-
-            return data;
-        }
-
-        // API: local watcher for setters
-        function watch(cb, executeOnMount = false) {
-            if (typeof cb !== "function") {
-                console.warn("watch callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.always.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, getWatchParams(false));
-            }
-        }
-
-        // API: local watcher when data changes
-        function watchEffect(cb, executeOnMount = false) {
-            if (typeof cb !== "function") {
-                console.warn("watchEffect callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.onChange.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, getWatchEffectParams());
-            }
-        }
 
         // HELPER: extract value from input/select/checkbox
         function extractDomValue(el) {
@@ -205,10 +150,66 @@ function RamState(opt = {}) {
             }
         }
 
-        // API: getters
-        const get = () => data;
+        const stateAPI = {
+            dom,
+            get value() {
+                return data;
+            },
+            set(value) {
 
-        const stateAPI = { dom, get, set, watch, watchEffect };
+                if (typeof value === "function") {
+                    value = value(data);
+                }
+
+                const hasChange = !isEqual(data, value);
+                data = value;
+
+                // State → DOM
+                if (dom) syncDom(dom, data);
+
+                // local watchers (always)
+                sideEffect.always.forEach(w => {
+                    safeRunCleanUp(w.cleanup);
+                    w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
+                });
+
+                // local watchers (onChange only if value changed)
+                if (hasChange) {
+                    sideEffect.onChange.forEach(w => {
+                        safeRunCleanUp(w.cleanup);
+                        w.cleanup = safeRun(w.cb, getWatchEffectParams());
+                    });
+                }
+
+                // excute global watchers
+                runGlobalEffects(stateAPI, hasChange);
+
+                return data;
+            },
+            watch(cb, executeOnMount = false) {
+                if (typeof cb !== "function") {
+                    console.warn("watch callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                if (executeOnMount) {
+                    watcher.cleanup = safeRun(cb, getWatchParams(false));
+                }
+                sideEffect.always.push(watcher);
+            },
+            watchEffect(cb, executeOnMount = false) {
+                if (typeof cb !== "function") {
+                    console.warn("watchEffect callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                if (executeOnMount) {
+                    watcher.cleanup = safeRun(cb, getWatchEffectParams());
+                }
+                sideEffect.onChange.push(watcher);
+            }
+        };
+
         allStates.add(stateAPI);
 
         return stateAPI;
@@ -224,21 +225,21 @@ function RamState(opt = {}) {
         }
 
         let cleanup;
-        function run() {
-            if (typeof cleanup === "function") {
-                safeRunCleanUp(cleanup);
-            }
-            cleanup = safeRun(cb);
-        }
 
-        const effect = { run, deps };
+        const effect = {
+            deps,
+            run() {
+                safeRunCleanUp(cleanup);
+                cleanup = safeRun(cb);
+            }
+        };
         globalEffects.push(effect);
 
         /* 
         * always run once at mount
         * deps === []
         */
-        run();
+        effect.run();
     } // useEffect() end
 
     // API: useButton
@@ -302,12 +303,6 @@ function RamState(opt = {}) {
         // HELPER: Generate watch effects parameters
         const getWatchEffectParams = () => ({ dom, state });
 
-        // API: setters
-        const disabled = (isDisabled = true) => set({ ...state, ...{ disabled: isDisabled } });
-
-        // API: setters
-        const loading = (isLoading = true) => set({ ...state, ...{ loading: isLoading, disabled: isLoading } });
-
         // HELPER: update DOM
         const updateRender = (stateData) => {
             elements.forEach(item => {
@@ -337,61 +332,23 @@ function RamState(opt = {}) {
 
             // local watchers (always)
             sideEffect.always.forEach(w => {
-                if (typeof w.cleanup === "function") {
-                    safeRunCleanUp(w.cleanup);
-                }
+                safeRunCleanUp(w.cleanup);
                 w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
             });
 
             // local watchers (onChange only if value changed)
             if (hasChange) {
                 sideEffect.onChange.forEach(w => {
-                    if (typeof w.cleanup === "function") {
-                        safeRunCleanUp(w.cleanup);
-                    }
+                    safeRunCleanUp(w.cleanup);
                     w.cleanup = safeRun(w.cb, getWatchEffectParams());
                 });
             }
 
-            // global watchers
-            globalEffects.forEach(({ run, deps }) => {
-                if (deps === null) {
-                    run();
-                } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
-                    run();
-                }
-                // deps === [] -> skip (already ran once at mount)
-            });
+            // excute global watchers
+            runGlobalEffects(stateAPI, hasChange);
 
             return state;
         }
-
-        // API: local watcher for setters
-        function watch(cb, executeOnMount = false) {
-            if (typeof cb !== "function") {
-                console.warn("watch callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.always.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, getWatchParams(false));
-            }
-        }
-
-        // API: local watcher when data changes
-        function watchEffect(cb, executeOnMount = false) {
-            if (typeof cb !== "function") {
-                console.warn("watchEffect callback must be a function");
-                return;
-            }
-            const watcher = { cb, cleanup: null };
-            sideEffect.onChange.push(watcher);
-            if (executeOnMount) {
-                watcher.cleanup = safeRun(cb, getWatchEffectParams());
-            }
-        }
-
 
         // HELPER: get DOM elements and return as array of elements
         function getDomElements() {
@@ -400,9 +357,40 @@ function RamState(opt = {}) {
             return [];
         }
 
-        const get = () => state;
-
-        const stateAPI = { dom, get, disabled, loading, watch, watchEffect };
+        const stateAPI = {
+            dom,
+            get value() {
+                return state;
+            },
+            disabled(isDisabled = true) {
+                return set({ ...state, ...{ disabled: isDisabled } })
+            },
+            loading(isLoading = true) {
+                return set({ ...state, ...{ loading: isLoading, disabled: isLoading } })
+            },
+            watch(cb, executeOnMount = false) {
+                if (typeof cb !== "function") {
+                    console.warn("watch callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                if (executeOnMount) {
+                    watcher.cleanup = safeRun(cb, getWatchParams(false));
+                }
+                sideEffect.always.push(watcher);
+            },
+            watchEffect(cb, executeOnMount = false) {
+                if (typeof cb !== "function") {
+                    console.warn("watchEffect callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                if (executeOnMount) {
+                    watcher.cleanup = safeRun(cb, getWatchEffectParams());
+                }
+                sideEffect.onChange.push(watcher);
+            }
+        };
 
         allStates.add(stateAPI);
 
@@ -411,7 +399,70 @@ function RamState(opt = {}) {
     } // useButton() end
 
 
+    // API: useMemo
+    function useMemo(factory, deps = []) {
+
+        let memoizedValue;
+
+        // side effects
+        let sideEffect = { onChange: [] };
+
+        // HELPER: Generate watch effects parameters
+        const getWatchEffectParams = () => ({ value: memoizedValue });
+
+        function compute() {
+
+            console.log("computing:");
+
+            memoizedValue = factory();
+
+            // local watchers
+            sideEffect.onChange.forEach(w => {
+                safeRunCleanUp(w.cleanup);
+                w.cleanup = safeRun(w.cb, getWatchEffectParams());
+            });
+
+            // execute global watchers
+            runGlobalEffects(valueAPI, true);
+
+            return memoizedValue;
+        }
+
+        // auto-subscribe to deps
+        deps.forEach((dep) => dep?.watchEffect(() => compute()));
+
+        // API: useMemo 
+        const valueAPI = {
+            get value() {
+                return memoizedValue;
+            },
+            watchEffect(cb) {
+                if (typeof cb !== "function") {
+                    console.warn("watchEffect callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                watcher.cleanup = safeRun(cb, getWatchEffectParams());
+                sideEffect.onChange.push(watcher);
+            }
+        };
+
+        // initial compute
+        compute();
+
+        return valueAPI;
+
+    }// useMemo() end
+
+
+
     if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);
 
-    return { useState, useEffect, useButton };
+    return {
+        useState,
+        useEffect,
+        useMemo,
+        useButton
+    };
+
 }

@@ -19,31 +19,58 @@
             text-decoration: line-through;
         }
     </style>
+    <script>
+        const { useState, useEffect, useMemo } = RamState();
+    </script>
 </head>
 
 <body class="container pt-3">
 
-    <div class="d-flex justify-content-center">
+    <div class="d-flex flex-column justify-content-center align-items-center gap-2">
+        <h1 class="text-center text-primary">RamStateJs Demo</h1>
+        <br>
         <div class="col-md-6 d-flex flex-column gap-2">
-            <h1 class="text-center text-primary">RamStateJs Demo</h1>
+            <h5>Memo: <span id="memoText"></span></h5>
             <input type="text" class="form-control" id="text" placeholder="type here">
             <h5>Text: <span id="textContent"></span></h5>
         </div>
+        <div class="btn-group">
+            <button class="btn btn-danger btn-sm" onclick="counter.set(v => v - 1)">-</button>
+            <button class="btn btn-secondary btn-sm" id="countText" onclick="counter.set(0)"></button>
+            <button class="btn btn-primary btn-sm" onclick="counter.set(v => v + 1)">+</button>
+        </div>
+
+        <span>
+            <button class="btn btn-primary" onclick="handleBacthUpdate()">Clear State</button>
+        </span>
     </div>
+
 
 </body>
 
 <script>
 
-    const { useState, useEffect } = RamState();
+    const text = useState('ram', '#text');
+    const counter = useState(0);
 
-    const textInput = useState('', '#text');
+    const memo = useMemo(() => {
+        console.log('%cuseMemo', 'color:red', 'is running...');
+        return text.value;
+    }, [text, counter]);
 
-    textInput.watchEffect(v => document.getElementById("textContent").innerHTML = v.data, true);
+    function handleBacthUpdate() {
+        counter.set(0);
+        text.set('');
+    }
+
+    memo.watchEffect(v => document.getElementById("memoText").innerHTML = v.value, true);
+    text.watchEffect(v => document.getElementById("textContent").innerHTML = v.value, true);
+    counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 
     useEffect(() => {
-        console.log('text:', textInput.get());
-    }, [textInput]);
+        console.log('%cuseEffect', 'color:yellow', 'is running...');
+    }, [text, counter]);
+
 
 </script>
 

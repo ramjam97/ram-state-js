@@ -40,14 +40,14 @@
 
     // 1st watchEffect
     switchState.watchEffect(v => {
-        document.getElementById("switchLabel").innerHTML = v.data ? 'ON' : 'OFF';
+        document.getElementById("switchLabel").innerHTML = v.value ? 'ON' : 'OFF';
     }, true);
 
     // 2nd watchEffect
     switchState.watchEffect(v => {
-        document.getElementById("swithBtn").innerHTML = v.data ? 'On' : 'Off';
-        document.getElementById("swithBtn").classList.add(v.data ? 'btn-primary' : 'btn-danger');
-        document.getElementById("swithBtn").classList.remove(v.data ? 'btn-danger' : 'btn-primary');
+        document.getElementById("swithBtn").innerHTML = v.value ? 'On' : 'Off';
+        document.getElementById("swithBtn").classList.add(v.value ? 'btn-primary' : 'btn-danger');
+        document.getElementById("swithBtn").classList.remove(v.value ? 'btn-danger' : 'btn-primary');
     }, true);
 
 </script>

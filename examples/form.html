@@ -88,11 +88,11 @@
     useEffect(() => {
 
         document.getElementById('preview').innerHTML = JSON.stringify({
-            firstName: firstName.get(),
-            lastName: lastName.get(),
-            birthDate: dob.get(),
-            gender: gender.get(),
-            completed: completed.get()
+            firstName: firstName.value,
+            lastName: lastName.value,
+            birthDate: dob.value,
+            gender: gender.value,
+            completed: completed.value
         }, null, 2);
 
     }, [firstName, lastName, dob, gender, completed]);
