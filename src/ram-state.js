@@ -3,13 +3,16 @@ function RamState(opt = {}) {
     // library version
     const version = "v2.4.0";
 
-    // Keep track of all states
+    // Keep track of all states (useState & useButton)
     const allStates = new Set();
 
-    // GLOBAL HELPER ------> START
-
+    // group schedule to minimize re-renders
     const scheduleJob = createScheduler();
 
+    // GLOBAL HELPER ------------------------------------------------> START
+
+
+    // HELPER: create scheduler
     function createScheduler() {
         let queue = new Set();
         let isFlushing = false;
@@ -71,7 +74,7 @@ function RamState(opt = {}) {
     }
 
 
-    // GLOBAL HELPER ------> END
+    // GLOBAL HELPER ------------------------------------------------> END
 
 
 
@@ -81,13 +84,13 @@ function RamState(opt = {}) {
         let data = initialValue;
 
         const sideEffect = {
-            always: [],
+            onSet: [],
             onChange: []
         };
 
         const dom = selector ? document.querySelector(selector) : null;
 
-        // Bind state to element if found
+        // HELPER: Bind state to element if found
         if (dom) {
             // initialize DOM from state
             syncDom(dom, data);
@@ -169,8 +172,8 @@ function RamState(opt = {}) {
                 // State → DOM
                 if (dom) syncDom(dom, data);
 
-                // local watchers (always)
-                sideEffect.always.forEach(w => {
+                // local watchers (onSet)
+                sideEffect.onSet.forEach(w => {
                     safeRunCleanUp(w.cleanup);
                     w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
                 });
@@ -194,13 +197,14 @@ function RamState(opt = {}) {
                 if (executeOnMount) {
                     watcher.cleanup = safeRun(cb, getWatchParams(false));
                 }
-                sideEffect.always.push(watcher);
+                sideEffect.onSet.push(watcher);
             },
             watchEffect(cb, executeOnMount = false) {
                 if (typeof cb !== "function") {
                     console.warn("watchEffect callback must be a function");
                     return;
                 }
+
                 const watcher = { cb, cleanup: null };
                 if (executeOnMount) {
                     watcher.cleanup = safeRun(cb, getWatchEffectParams());
@@ -269,7 +273,7 @@ function RamState(opt = {}) {
 
         // HELPER: side effects placeholder
         const sideEffect = {
-            always: [],
+            onSet: [],
             onChange: []
         };
 
@@ -306,8 +310,8 @@ function RamState(opt = {}) {
             // State → DOM
             updateRender(state);
 
-            // local watchers (always)
-            sideEffect.always.forEach(w => {
+            // local watchers (onSet)
+            sideEffect.onSet.forEach(w => {
                 safeRunCleanUp(w.cleanup);
                 w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
             });
@@ -350,7 +354,7 @@ function RamState(opt = {}) {
                 if (executeOnMount) {
                     watcher.cleanup = safeRun(cb, getWatchParams(false));
                 }
-                sideEffect.always.push(watcher);
+                sideEffect.onSet.push(watcher);
             },
             watchEffect(cb, executeOnMount = false) {
                 if (typeof cb !== "function") {
@@ -386,21 +390,17 @@ function RamState(opt = {}) {
             cleanup = safeRun(cb);
         }
 
-        // globalEffects.push(effect);
-
         if (deps === null || deps === undefined) {
+            // deps is undefined or null
             allStates.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
         } else if (Array.isArray(deps)) {
+            // deps is not empty array
             deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
         }
 
-        // console.log("allStates:", allStates);
-
-        /* 
-        * always run once at mount
-        * deps === []
-        */
+        // deps is empty array or on-mount
         effect();
+
     } // useEffect() end
 
     // API: useMemo
@@ -430,8 +430,10 @@ function RamState(opt = {}) {
         // auto-subscribe to deps
         deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(compute)));
 
-        // API: useMemo 
-        const valueAPI = {
+        // initial compute
+        compute();
+
+        return {
             get value() {
                 return memoizedValue;
             },
@@ -445,11 +447,6 @@ function RamState(opt = {}) {
                 sideEffect.push(watcher);
             }
         };
-
-        // initial compute
-        compute();
-
-        return valueAPI;
 
     }// useMemo() end
 

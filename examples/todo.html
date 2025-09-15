@@ -43,52 +43,70 @@
     <!-- Task list -->
     <ul id="todoList" class="list-group mb-3"></ul>
 
-    <button class="btn btn-danger" onclick="todo.set([]); filterBy.set('active');">Clear State</button>
+    <button class="btn btn-danger" id="clearBtn">Clear State</button>
 
 </body>
 <script>
-    const { useState, useEffect, useMemo } = RamState();
+    const { useState, useEffect, useButton, useMemo } = RamState();
 
     const todo = useState([]);
     const filterBy = useState('active', "#filterBy");
     const id = useState(1);
 
+    document.getElementById('clearBtn').addEventListener('click', (e) => {
+
+        const { loading } = useButton(e.target, { loading: { icon: "⏳" } });
+        loading();
+
+        filterBy.set('active');
+        todo.set([]);
+
+        setTimeout(() => loading(false), 1000);
+    });
+
     const filteredTodo = useMemo(() => {
-        console.log('%cuseMemo', 'color:red', 'is running...');
+
+        console.log('%cuseMemo [filteredTodo]', 'color:red', { todo: todo.value.length, filterBy: filterBy.value });
+
         if (filterBy.value === 'all') return todo.value;
         if (filterBy.value === 'active') return todo.value.filter(item => !item.completed);
         if (filterBy.value === 'completed') return todo.value.filter(item => item.completed);
         return [];
+
+    }, [todo, filterBy]);
+
+    const completedTodo = useMemo(() => {
+
+        console.log('%cuseMemo [completedTodo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
+
+        return todo.value.filter(item => item.completed);
+    }, [todo]);
+
+    useEffect(() => {
+        console.log('%cuseEffect', 'color:yellow', { todo: todo.value.length, filterBy: filterBy.value });
     }, [todo, filterBy]);
 
     filteredTodo.watchEffect(({ value }) => {
 
+        console.log('%cwatchEffect [filteredTodo]', 'color:orange', { todo: todo.value.length, filterBy: filterBy.value });
+
         const totalCompleted = todo.value.filter(item => item.completed).length;
 
-        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.value.length}`;
         document.getElementById("todoList").innerHTML = value.length ?
             value.map(item => `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span class="cursor-pointer ${item.completed ? 'completed' : ''}" onclick="toggleCompleted(${item.id})">
                         ${item.id}. ${item.task}
-                    </span>
-                    <button class="btn-close" onclick="removeTask(${item.id})"></button>
-                </li>`).join('')
+                        </span>
+                        <button class="btn-close" onclick="removeTask(${item.id})"></button>
+                        </li>`).join('')
             : `<li class="list-group-item text-muted">No tasks</li>`;
     });
 
-    useEffect(() => {
-        console.log('%cuseEffect []', 'color:yellowgreen', 'is running...');
+    completedTodo.watchEffect((cntxt) => {
+        console.log('%cwatchEffect [completedTodo]', 'color:orange', cntxt);
+        document.getElementById('todoCount').textContent = `${cntxt.value.length}/${todo.value.length}`;
     });
-
-    useEffect(() => {
-        console.log('%cuseEffect [todo, filterBy]', 'color:yellow', 'is running...');
-
-        const todoLen = todo.value.length;
-        return () => console.log('TODO length:', todoLen);
-
-    }, [todo, filterBy]);
-
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
@@ -101,6 +119,8 @@
             e.target.value = '';
         }
     });
+
+    console.log('filterBy Effects:', filterBy);
 
     function removeTask(id) {
         todo.set(list => list.filter(item => item.id !== id));
