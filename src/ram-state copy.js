@@ -5,6 +5,7 @@ function RamState(opt = {}) {
 
     // Keep track of all states
     const allStates = new Set();
+    const globalEffects = [];
 
     // GLOBAL HELPER ------> START
 
@@ -70,6 +71,18 @@ function RamState(opt = {}) {
         }
     }
 
+
+    // HELPER: run global watchers
+    const runGlobalEffects = (stateAPI, hasChange = true) => {
+        globalEffects.forEach(({ run, deps }) => {
+            if (deps === null) {
+                run();
+            } else if (hasChange && deps.length > 0 && deps.includes(stateAPI)) {
+                run();
+            }
+            // deps === [] -> skip (already ran once at mount)
+        });
+    }
 
     // GLOBAL HELPER ------> END
 
@@ -182,6 +195,9 @@ function RamState(opt = {}) {
                         w.cleanup = safeRun(w.cb, getWatchEffectParams());
                     });
                 }
+
+                // excute global watchers
+                runGlobalEffects(stateAPI, hasChange);
 
                 return data;
             },
@@ -320,6 +336,9 @@ function RamState(opt = {}) {
                 });
             }
 
+            // excute global watchers
+            runGlobalEffects(stateAPI, hasChange);
+
             return state;
         }
 
@@ -381,26 +400,20 @@ function RamState(opt = {}) {
 
         let cleanup;
 
-        function effect() {
-            safeRunCleanUp(cleanup);
-            cleanup = safeRun(cb);
-        }
-
-        // globalEffects.push(effect);
-
-        if (deps === null || deps === undefined) {
-            allStates.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
-        } else if (Array.isArray(deps)) {
-            deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
-        }
-
-        // console.log("allStates:", allStates);
+        const effect = {
+            deps,
+            run() {
+                safeRunCleanUp(cleanup);
+                cleanup = safeRun(cb);
+            }
+        };
+        globalEffects.push(effect);
 
         /* 
         * always run once at mount
         * deps === []
         */
-        effect();
+        effect.run();
     } // useEffect() end
 
     // API: useMemo
@@ -409,7 +422,7 @@ function RamState(opt = {}) {
         let memoizedValue;
 
         // side effects
-        let sideEffect = [];
+        let sideEffect = { onChange: [] };
 
         // HELPER: Generate watch effects parameters
         const getWatchEffectParams = () => ({ value: memoizedValue });
@@ -419,15 +432,19 @@ function RamState(opt = {}) {
             memoizedValue = factory();
 
             // local watchers
-            sideEffect.forEach(w => {
+            sideEffect.onChange.forEach(w => {
                 safeRunCleanUp(w.cleanup);
                 w.cleanup = safeRun(w.cb, getWatchEffectParams());
             });
+
+            // execute global watchers
+            runGlobalEffects(valueAPI, true);
 
             return memoizedValue;
         }
 
         // auto-subscribe to deps
+        // deps.forEach((dep) => dep?.watchEffect(() => compute()));
         deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(compute)));
 
         // API: useMemo 
@@ -442,7 +459,7 @@ function RamState(opt = {}) {
                 }
                 const watcher = { cb, cleanup: null };
                 watcher.cleanup = safeRun(cb, getWatchEffectParams());
-                sideEffect.push(watcher);
+                sideEffect.onChange.push(watcher);
             }
         };
 

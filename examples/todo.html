@@ -41,7 +41,9 @@
     </div>
 
     <!-- Task list -->
-    <ul id="todoList" class="list-group"></ul>
+    <ul id="todoList" class="list-group mb-3"></ul>
+
+    <button class="btn btn-danger" onclick="todo.set([]); filterBy.set('active');">Clear State</button>
 
 </body>
 <script>
@@ -74,6 +76,19 @@
                 </li>`).join('')
             : `<li class="list-group-item text-muted">No tasks</li>`;
     });
+
+    useEffect(() => {
+        console.log('%cuseEffect []', 'color:yellowgreen', 'is running...');
+    });
+
+    useEffect(() => {
+        console.log('%cuseEffect [todo, filterBy]', 'color:yellow', 'is running...');
+
+        const todoLen = todo.value.length;
+        return () => console.log('TODO length:', todoLen);
+
+    }, [todo, filterBy]);
+
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
