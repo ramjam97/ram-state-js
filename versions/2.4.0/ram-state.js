@@ -3,7 +3,7 @@
  * Description: RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.
  * Author: Ram Jam
  * GitHub: https://github.com/ramjam97/ram-state-js
- * Build Date: 2025-09-15 23:35:18 (Asia/Manila)
+ * Build Date: 2025-09-15 23:38:28 (Asia/Manila)
  */
 function RamState(opt = {}) {
 
@@ -100,7 +100,7 @@ function RamState(opt = {}) {
         // HELPER: Bind state to element if found
         if (dom) {
             // initialize DOM from state
-            syncDom(dom, data);
+            syncDomModel(dom, data);
 
             // DOM → State
             dom.addEventListener("input", () => {
@@ -142,7 +142,7 @@ function RamState(opt = {}) {
 
 
         // HELPER: sync DOM element with state
-        function syncDom(el, value) {
+        function syncDomModel(el, value) {
             if (el instanceof HTMLInputElement) {
                 if (el.type === "checkbox") {
                     el.checked = !!value;
@@ -177,7 +177,7 @@ function RamState(opt = {}) {
                 data = value;
 
                 // State → DOM
-                if (dom) syncDom(dom, data);
+                if (dom) syncDomModel(dom, data);
 
                 // local watchers (onSet)
                 sideEffect.onSet.forEach(w => {

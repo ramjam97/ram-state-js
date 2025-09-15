@@ -93,7 +93,7 @@ function RamState(opt = {}) {
         // HELPER: Bind state to element if found
         if (dom) {
             // initialize DOM from state
-            syncDom(dom, data);
+            syncDomModel(dom, data);
 
             // DOM → State
             dom.addEventListener("input", () => {
@@ -135,7 +135,7 @@ function RamState(opt = {}) {
 
 
         // HELPER: sync DOM element with state
-        function syncDom(el, value) {
+        function syncDomModel(el, value) {
             if (el instanceof HTMLInputElement) {
                 if (el.type === "checkbox") {
                     el.checked = !!value;
@@ -170,7 +170,7 @@ function RamState(opt = {}) {
                 data = value;
 
                 // State → DOM
-                if (dom) syncDom(dom, data);
+                if (dom) syncDomModel(dom, data);
 
                 // local watchers (onSet)
                 sideEffect.onSet.forEach(w => {
