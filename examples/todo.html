@@ -54,26 +54,17 @@
     const filterBy = useState('active', "#filterBy");
     const id = useState(0);
 
-    todo.watch((cntxt) => {
-        console.log('%ctodo.watch:', 'color:yellowgreen', cntxt);
-    });
     id.watchEffect(({ value }) => document.getElementById('idLabel').textContent = value, true);
 
-
-    const clearBtn = useButton('#clearBtn', { loading: { icon: "⏳" } });
     document.getElementById('clearBtn').addEventListener('click', (e) => {
+        const { loading } = useButton('#clearBtn', { loading: { icon: "⏳" } });
 
-        clearBtn.loading();
+        loading();
 
         filterBy.set('active');
         todo.set([]);
 
-        setTimeout(() => clearBtn.loading(false), 1000);
-    });
-
-
-    clearBtn.watch(({ state }) => {
-        console.log('%cclearBtn.watch:', 'color:yellow', state)
+        setTimeout(() => loading(false), 1000);
     });
 
 
@@ -91,7 +82,7 @@
 
     const completedTodo = useMemo(() => {
 
-        console.log('%completedTodo.cuseMemo [todo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
+        console.log('%ccompletedTodo.useMemo [todo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
 
         return todo.value.filter(item => item.completed);
     }, [todo]);
@@ -134,8 +125,6 @@
             e.target.value = '';
         }
     });
-
-    console.log('completedTodo:', completedTodo);
 
     function removeTask(id) {
         todo.set(list => list.filter(item => item.id !== id));

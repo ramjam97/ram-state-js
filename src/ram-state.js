@@ -438,7 +438,7 @@ function RamState(opt = {}) {
 
     }// useMemo() end
 
-    if (opt.debug ?? true) console.log(`RamState ${version} initialized 🚀`);
+    if (opt.debug ?? true) console.log('%cRamState','color:cyan', version, 'initialized 🚀');
 
     return {
         useState,
