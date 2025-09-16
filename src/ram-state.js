@@ -37,6 +37,7 @@ function RamState(opt = {}) {
     const isEqual = (a, b) => {
 
         if (a === b) return true;
+
         if (typeof a !== typeof b) return false;
 
         if (Array.isArray(a) && Array.isArray(b)) {
@@ -44,9 +45,12 @@ function RamState(opt = {}) {
         }
 
         if (a && b && typeof a === "object") {
+
             const keysA = Object.keys(a);
             const keysB = Object.keys(b);
+
             if (keysA.length !== keysB.length) return false;
+
             return keysA.every(k => isEqual(a[k], b[k]));
         }
 
@@ -83,10 +87,7 @@ function RamState(opt = {}) {
 
         let data = initialValue;
 
-        const sideEffect = {
-            onSet: [],
-            onChange: []
-        };
+        const sideEffect = { onSet: [], onChange: [] };
 
         const dom = selector ? document.querySelector(selector) : null;
 
@@ -161,12 +162,12 @@ function RamState(opt = {}) {
                 return data;
             },
             set(value) {
-
                 if (typeof value === "function") {
                     value = value(data);
                 }
 
                 const hasChange = !isEqual(data, value);
+
                 data = value;
 
                 // State → DOM
@@ -188,16 +189,12 @@ function RamState(opt = {}) {
 
                 return data;
             },
-            watch(cb, executeOnMount = false) {
+            watch(cb) {
                 if (typeof cb !== "function") {
                     console.warn("watch callback must be a function");
                     return;
                 }
-                const watcher = { cb, cleanup: null };
-                if (executeOnMount) {
-                    watcher.cleanup = safeRun(cb, getWatchParams(false));
-                }
-                sideEffect.onSet.push(watcher);
+                sideEffect.onSet.push({ cb, cleanup: safeRun(cb, getWatchParams(false)) });
             },
             watchEffect(cb, executeOnMount = false) {
                 if (typeof cb !== "function") {
@@ -272,10 +269,7 @@ function RamState(opt = {}) {
         };
 
         // HELPER: side effects placeholder
-        const sideEffect = {
-            onSet: [],
-            onChange: []
-        };
+        const sideEffect = { onSet: [], onChange: [] };
 
         // HELPER: Generate watch parameters
         const getWatchParams = hasChange => ({ dom, state, hasChange });
@@ -345,16 +339,12 @@ function RamState(opt = {}) {
             loading(isLoading = true) {
                 return set({ ...state, ...{ loading: isLoading, disabled: isLoading } })
             },
-            watch(cb, executeOnMount = false) {
+            watch(cb) {
                 if (typeof cb !== "function") {
                     console.warn("watch callback must be a function");
                     return;
                 }
-                const watcher = { cb, cleanup: null };
-                if (executeOnMount) {
-                    watcher.cleanup = safeRun(cb, getWatchParams(false));
-                }
-                sideEffect.onSet.push(watcher);
+                sideEffect.onSet.push({ cb, cleanup: safeRun(cb, getWatchParams(false)) });
             },
             watchEffect(cb, executeOnMount = false) {
                 if (typeof cb !== "function") {
@@ -437,14 +427,12 @@ function RamState(opt = {}) {
             get value() {
                 return memoizedValue;
             },
-            watchEffect(cb) {
+            watch(cb) {
                 if (typeof cb !== "function") {
                     console.warn("watchEffect callback must be a function");
                     return;
                 }
-                const watcher = { cb, cleanup: null };
-                watcher.cleanup = safeRun(cb, getWatchEffectParams());
-                sideEffect.push(watcher);
+                sideEffect.push({ cb, cleanup: safeRun(cb, getWatchEffectParams()) });
             }
         };
 

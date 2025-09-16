@@ -44,6 +44,7 @@
     <ul id="todoList" class="list-group mb-3"></ul>
 
     <button class="btn btn-danger" id="clearBtn">Clear State</button>
+    <span>ID: <span id="idLabel"></span></span>
 
 </body>
 <script>
@@ -51,22 +52,34 @@
 
     const todo = useState([]);
     const filterBy = useState('active', "#filterBy");
-    const id = useState(1);
+    const id = useState(0);
 
+    todo.watch((cntxt) => {
+        console.log('%ctodo.watch:', 'color:yellowgreen', cntxt);
+    });
+    id.watchEffect(({ value }) => document.getElementById('idLabel').textContent = value, true);
+
+
+    const clearBtn = useButton('#clearBtn', { loading: { icon: "⏳" } });
     document.getElementById('clearBtn').addEventListener('click', (e) => {
 
-        const { loading } = useButton(e.target, { loading: { icon: "⏳" } });
-        loading();
+        clearBtn.loading();
 
         filterBy.set('active');
         todo.set([]);
 
-        setTimeout(() => loading(false), 1000);
+        setTimeout(() => clearBtn.loading(false), 1000);
     });
+
+
+    clearBtn.watch(({ state }) => {
+        console.log('%cclearBtn.watch:', 'color:yellow', state)
+    });
+
 
     const filteredTodo = useMemo(() => {
 
-        console.log('%cuseMemo [filteredTodo]', 'color:red', { todo: todo.value.length, filterBy: filterBy.value });
+        console.log('%cfilteredTodo.useMemo [todo, filterBy]', 'color:red', { todo: todo.value.length, filterBy: filterBy.value });
 
         if (filterBy.value === 'all') return todo.value;
         if (filterBy.value === 'active') return todo.value.filter(item => !item.completed);
@@ -75,20 +88,22 @@
 
     }, [todo, filterBy]);
 
+
     const completedTodo = useMemo(() => {
 
-        console.log('%cuseMemo [completedTodo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
+        console.log('%completedTodo.cuseMemo [todo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
 
         return todo.value.filter(item => item.completed);
     }, [todo]);
 
     useEffect(() => {
-        console.log('%cuseEffect', 'color:yellow', { todo: todo.value.length, filterBy: filterBy.value });
+        console.log('%cuseEffect [todo, filterBy]', 'color:yellow', { todo: todo.value.length, filterBy: filterBy.value });
     }, [todo, filterBy]);
 
-    filteredTodo.watchEffect(({ value }) => {
 
-        console.log('%cwatchEffect [filteredTodo]', 'color:orange', { todo: todo.value.length, filterBy: filterBy.value });
+    filteredTodo.watch(({ value }) => {
+
+        console.log('%cfilteredTodo.watchEffect', 'color:orange', { todo: todo.value.length, filterBy: filterBy.value });
 
         const totalCompleted = todo.value.filter(item => item.completed).length;
 
@@ -103,24 +118,24 @@
             : `<li class="list-group-item text-muted">No tasks</li>`;
     });
 
-    completedTodo.watchEffect((cntxt) => {
-        console.log('%cwatchEffect [completedTodo]', 'color:orange', cntxt);
+    completedTodo.watch((cntxt) => {
         document.getElementById('todoCount').textContent = `${cntxt.value.length}/${todo.value.length}`;
     });
 
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
+
             todo.set(list => [...list, {
-                id: id.value,
+                id: id.set(id => id + 1),
                 task: e.target.value.trim(),
                 completed: false
             }]);
-            id.set(v => v + 1);
+
             e.target.value = '';
         }
     });
 
-    console.log('filterBy Effects:', filterBy);
+    console.log('completedTodo:', completedTodo);
 
     function removeTask(id) {
         todo.set(list => list.filter(item => item.id !== id));

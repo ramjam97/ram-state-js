@@ -63,7 +63,7 @@
         text.set('');
     }
 
-    memo.watchEffect(v => document.getElementById("memoText").innerHTML = v.value, true);
+    memo.watch(v => document.getElementById("memoText").innerHTML = v.value, true);
     text.watchEffect(v => document.getElementById("textContent").innerHTML = v.value, true);
     counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 
