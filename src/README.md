@@ -199,7 +199,7 @@ Creates a state instance.
 Returns an object:
 - `.value` → get current value
 - `.set(value | fn)` → update value (direct or functional)
-- `.watch(cb, executeOnMount?)` → runs on every `.set()`
+- `.watch(cb)` → runs on mount and every `.set()`
 - `.watchEffect(cb, executeOnMount?)` → runs only when value changes
 - `.dom` → bound DOM element (if any)
 ---
@@ -221,7 +221,7 @@ Returns:
 - `.value`: → get current button state
 - ``.disabled(bool)`` → enable/disable button
 - ``.loading(bool)`` → enable/disable button with loading indicator
-- `.watch(cb, executeOnMount?)` → runs on every `.disabled()` and ``.loading()``
+- `.watch(cb?)` → runs on mount and every `.disabled()` and ``.loading()``
 - `.watchEffect(cb, executeOnMount?)` → runs only when value changes
 
 

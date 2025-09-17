@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- ramstatejs -->
-    <script src="../dist/ram-state.min.js"></script>
+    <script src="../dist/ram-state.js"></script>
     <style>
         .cursor-pointer {
             cursor: pointer;
@@ -44,7 +44,6 @@
     <ul id="todoList" class="list-group mb-3"></ul>
 
     <button class="btn btn-danger" id="clearBtn">Clear State</button>
-    <span>ID: <span id="idLabel"></span></span>
 
 </body>
 <script>
@@ -54,11 +53,9 @@
     const filterBy = useState('active', "#filterBy");
     const id = useState(0);
 
-    id.watchEffect(({ value }) => document.getElementById('idLabel').textContent = value, true);
-
     document.getElementById('clearBtn').addEventListener('click', (e) => {
-        const { loading } = useButton('#clearBtn', { loading: { icon: "⏳" } });
 
+        const { loading } = useButton('#clearBtn', { loading: { icon: "⏳" } });
         loading();
 
         filterBy.set('active');
@@ -67,10 +64,7 @@
         setTimeout(() => loading(false), 1000);
     });
 
-
     const filteredTodo = useMemo(() => {
-
-        console.log('%cfilteredTodo.useMemo [todo, filterBy]', 'color:red', { todo: todo.value.length, filterBy: filterBy.value });
 
         if (filterBy.value === 'all') return todo.value;
         if (filterBy.value === 'active') return todo.value.filter(item => !item.completed);
@@ -80,24 +74,11 @@
     }, [todo, filterBy]);
 
 
-    const completedTodo = useMemo(() => {
-
-        console.log('%ccompletedTodo.useMemo [todo]', 'color:green', { todo: todo.value.length, filterBy: filterBy.value });
-
-        return todo.value.filter(item => item.completed);
-    }, [todo]);
-
-    useEffect(() => {
-        console.log('%cuseEffect [todo, filterBy]', 'color:yellow', { todo: todo.value.length, filterBy: filterBy.value });
-    }, [todo, filterBy]);
-
-
     filteredTodo.watch(({ value }) => {
-
-        console.log('%cfilteredTodo.watchEffect', 'color:orange', { todo: todo.value.length, filterBy: filterBy.value });
 
         const totalCompleted = todo.value.filter(item => item.completed).length;
 
+        document.getElementById('todoCount').textContent = `${totalCompleted}/${todo.value.length}`;
         document.getElementById("todoList").innerHTML = value.length ?
             value.map(item => `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -109,19 +90,13 @@
             : `<li class="list-group-item text-muted">No tasks</li>`;
     });
 
-    completedTodo.watch((cntxt) => {
-        document.getElementById('todoCount').textContent = `${cntxt.value.length}/${todo.value.length}`;
-    });
-
     document.getElementById('inputTask').addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && e.target.value?.trim() !== '') {
-
             todo.set(list => [...list, {
                 id: id.set(id => id + 1),
                 task: e.target.value.trim(),
                 completed: false
             }]);
-
             e.target.value = '';
         }
     });
@@ -133,6 +108,7 @@
     function toggleCompleted(id) {
         todo.set(list => list.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
     }
+
 </script>
 
 </html>

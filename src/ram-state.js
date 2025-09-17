@@ -139,20 +139,29 @@ function RamState(opt = {}) {
         function syncDomModel(el, value) {
             if (el instanceof HTMLInputElement) {
                 if (el.type === "checkbox") {
-                    el.checked = !!value;
-                } else {
-                    el.value = value ?? "";
+                    const checked = Boolean(value);
+                    if (el.checked !== checked) {
+                        el.checked = checked;
+                    }
+                    return;
                 }
-            } else if (el instanceof HTMLSelectElement) {
+            }
+            if (el instanceof HTMLSelectElement) {
                 if (el.multiple && Array.isArray(value)) {
-                    [...el.options].forEach(opt => {
-                        opt.selected = value.includes(opt.value);
+                    const values = new Set(value.map(String)); // normalize
+                    Array.from(el.options).forEach(opt => {
+                        const shouldSelect = values.has(opt.value);
+                        if (opt.selected !== shouldSelect) {
+                            opt.selected = shouldSelect;
+                        }
                     });
-                } else {
-                    el.value = value ?? "";
+                    return;
                 }
-            } else if (el instanceof HTMLTextAreaElement) {
-                el.value = value ?? "";
+            }
+            // fallback: text, textarea, single-select, etc.
+            const newValue = value ?? "";
+            if (el.value !== newValue) {
+                el.value = newValue;
             }
         }
 
@@ -438,7 +447,7 @@ function RamState(opt = {}) {
 
     }// useMemo() end
 
-    if (opt.debug ?? true) console.log('%cRamState','color:cyan', version, 'initialized 🚀');
+    if (opt.debug ?? true) console.log('%cRamState', 'color:cyan', version, 'initialized 🚀');
 
     return {
         useState,
