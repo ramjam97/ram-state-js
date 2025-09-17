@@ -56,6 +56,18 @@
                             </select>
                         </div>
                         <div class="form-group mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select" multiple>
+                                <option value="a">A</option>
+                                <option value="b">B</option>
+                                <option value="c">C</option>
+                                <option value="d">D</option>
+                                <option value="e">E</option>
+                                <option value="f">F</option>
+                                <option value="g">G</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
                             <label class="form-label">
                                 <input type="checkbox" class="form-check-input" name="completed">
                                 Completed
@@ -83,6 +95,7 @@
     const lastName = useState('jam', '#formData input[name="lastname"]');
     const dob = useState('2025-09-08', '#formData input[name="dob"]');
     const gender = useState('male', '#formData select[name="gender"]');
+    const category = useState(['a', 'b'], '#formData select[name="category"]');
     const completed = useState(false, '#formData input[name="completed"]');
 
     useEffect(() => {
@@ -92,10 +105,11 @@
             lastName: lastName.value,
             birthDate: dob.value,
             gender: gender.value,
+            category: category.value,
             completed: completed.value
         }, null, 2);
 
-    }, [firstName, lastName, dob, gender, completed]);
+    }, [firstName, lastName, dob, gender, category, completed]);
 
 </script>
 
