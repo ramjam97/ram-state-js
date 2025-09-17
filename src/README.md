@@ -1,8 +1,6 @@
 
 # RamStateJs
 
-Lightweight state management library for **vanilla JavaScript**.
-
 Version: 2.4.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
