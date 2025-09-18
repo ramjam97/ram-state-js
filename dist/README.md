@@ -60,11 +60,17 @@ const name = useState("John", "#nameInput");
 // Watch every set (always fires)
 name.watch(({ value, hasChange }) => {
   console.log("Set →", value, "changed:", hasChange);
+
+  // clean up (optional)
+  return () => console.log('clean up:', value);
 });
 
 // Watch only when value changes
 name.watchEffect(({ value }) => {
   console.log("Changed →", value);
+  
+  // clean up (optional)
+  return () => console.log('clean up:', value);
 }, true);
 
 // Update state
@@ -89,6 +95,9 @@ const count = useState(0);
 // Re-run whenever count changes
 useEffect(() => {
   console.log("Count changed:", count.value);
+
+  // clean up (optional)
+  return () => console.log('clean up');
 }, [count]);
 
 // Runs once at mount
@@ -99,6 +108,9 @@ useEffect(() => {
 // Run on every state change
 useEffect(() => {
   console.log("Something changed!");
+
+  // clean up (optional)
+  return () => console.log('clean up');
 });
 
 ```
