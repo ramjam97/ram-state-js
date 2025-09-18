@@ -10,7 +10,7 @@
   "author": "Ram Jam",
   "license": "ISC",
   "git": "https://github.com/ramjam97/ram-state-js",
-  "description": "RamStateJs is a lightweight state management library for vanilla JavaScript. It provides a simple API to manage local and global state with watchers, effects, and DOM binding, inspired by React’s useState and useEffect.",
+  "description": "A vanilla JavaScript state management library inspired by React’s useState, useEffect, and useMemo – but without any framework. It helps you manage stateful data and DOM bindings easily with reactive watchers and side effects.",
   "type": "module",
   "devDependencies": {
     "terser": "^5.44.0"
