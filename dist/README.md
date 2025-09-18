@@ -91,6 +91,11 @@ useEffect(() => {
   console.log("Count changed:", count.value);
 }, [count]);
 
+// Runs once at mount
+useEffect(() => {
+  console.log("Mounted");
+}, []);
+
 // Run on every state change
 useEffect(() => {
   console.log("Something changed!");
