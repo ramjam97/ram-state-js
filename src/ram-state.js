@@ -158,10 +158,22 @@ function RamState(opt = {}) {
                     return;
                 }
             }
+
             // fallback: text, textarea, single-select, etc.
             const newValue = value ?? "";
-            if (el.value !== newValue) {
+            if ("value" in el && el.value !== newValue) {
                 el.value = newValue;
+            }
+
+            // only update textContent for non-form elements
+            if (
+                !(el instanceof HTMLInputElement) &&
+                !(el instanceof HTMLTextAreaElement) &&
+                !(el instanceof HTMLSelectElement)
+            ) {
+                if (el.textContent !== newValue) {
+                    el.textContent = newValue;
+                }
             }
         }
 

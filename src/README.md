@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 2.4.0  
+Version: 2.5.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -18,7 +18,7 @@ It helps you manage **stateful data** and **DOM bindings** easily with reactive 
 - ✅ ``useEffect`` → Run side effects when dependencies change.
 - ✅ ``useMemo`` → Cache computed values with dependency tracking.
 - ✅ ``useButton`` → Manage ``loading`` & ``disabled`` states for buttons.
-- ✅ Automatic DOM binding for ``<input>``, ``<select>``, ``<textarea>``.
+- ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
 - ✅ Watchers with cleanup support.
 - ✅ Internal scheduler to batch updates (avoids unnecessary re-renders).
 
@@ -36,7 +36,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.4.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.5.0/dist/ram-state.min.js"></script>
 ```
 
 
@@ -52,30 +52,56 @@ const { useState, useEffect } = RamState();
 
 ### 1. ``useState``
 
+#### Example 1: Basic
+```js
+const { useState } = RamState();
+
+const counter = useState(0);
+
+// update state value
+counter.set(1);
+
+// update state value using function
+counter.set(c => c+1);
+
+// get current state value
+console.log(counter.value); // 2
+
+// watch every set (always fires)
+counter.watch(({ value, hasChange }) => {
+  console.log("Set →", value, "changed:", hasChange);
+  // cleanup (optional)
+  return () => console.log("Clean up");
+});
+
+// watch only when value changes
+counter.watchEffect(({ value }) => {
+  console.log("Changed →", value);
+  // cleanup 
+  return () => console.log("Clean up");
+}, true);
+```
+
+
+#### Example 2: Data Binding for regular elements (div, span, p, etc.)
+```js
+const { useState } = RamState();
+
+const counter = useState(0, "#counterText");
+```
+✅ Automatically syncs with DOM if you provide a selector.
+```html
+<span id="counterText"></span>
+```
+
+
+
+#### Example 3: Data Binding for Input-like elements (input, select, textarea)
 ```js
 const { useState } = RamState();
 
 const name = useState("John", "#nameInput");
 
-// Watch every set (always fires)
-name.watch(({ value, hasChange }) => {
-  console.log("Set →", value, "changed:", hasChange);
-
-  // clean up (optional)
-  return () => console.log('clean up:', value);
-});
-
-// Watch only when value changes
-name.watchEffect(({ value }) => {
-  console.log("Changed →", value);
-  
-  // clean up (optional)
-  return () => console.log('clean up:', value);
-}, true);
-
-// Update state
-name.value;     // "John"
-name.set("Jane");
 ```
 
 ✅ Automatically syncs with DOM if you provide a selector.
@@ -85,6 +111,7 @@ name.set("Jane");
 
 ```
 
+
 ### 2. ``useEffect``
 
 ```js
@@ -92,27 +119,25 @@ const { useState, useEffect } = RamState();
 
 const count = useState(0);
 
-// Re-run whenever count changes
-useEffect(() => {
-  console.log("Count changed:", count.value);
 
-  // clean up (optional)
-  return () => console.log('clean up');
-}, [count]);
-
-// Runs once at mount
+// runs once at mount
 useEffect(() => {
   console.log("Mounted");
 }, []);
 
-// Run on every state change
+// re-run whenever count changes
+useEffect(() => {
+  console.log("Count changed:", count.value);
+  // clean up (optional)
+  return () => console.log('clean up');
+}, [count]);
+
+// run on every state change
 useEffect(() => {
   console.log("Something changed!");
-
   // clean up (optional)
   return () => console.log('clean up');
 });
-
 ```
 
 
@@ -140,23 +165,23 @@ num1.set(50);
 ```js
 const { useButton } = RamState();
 
-// Link to a button by selector
+// link to a button by selector
 const saveBtn = useButton("#saveBtn", {
   loading: { html: "Saving...", icon: " ⏳" },
   disabled: { class: "btn-disabled" }
 });
 
-// Watch button state
+// watch button state
 saveBtn.watch(({ state }) => {
   console.log("Button set:", state);
 });
 
-// Watch only when it changes
+// watch only when it changes
 saveBtn.watchEffect(({ state }) => {
   console.log("Button changed:", state);
 }, true);
 
-// Trigger state changes
+// trigger state changes
 saveBtn.loading(true);   // shows "Saving... ⏳"
 setTimeout(() => saveBtn.loading(false), 2000);
 

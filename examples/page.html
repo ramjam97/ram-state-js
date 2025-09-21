@@ -13,40 +13,74 @@
 </head>
 
 <body>
-    <div class="container pt-3">
+    <div class="container py-3">
 
-        <h1 class="text-center text-primary">RamState Demo</h1>
+        <div class="d-flex flex-column gap-2">
 
-        <div class="d-flex flex-column justify-content-center align-items-center">
+            <h1 class="text-center text-primary">RamState Demo</h1>
 
-            <h5>Counter: <span id="counter"></span></h5>
+            <input type="search" class="form-control" placeholder="search item.." id="searchInput">
 
-            <span>
-                <button class="btn btn-danger" onclick="counter.set(v => v-1)">-</button>
-                <button class="btn btn-secondary" onclick="counter.set(0)">Reset</button>
-                <button class="btn btn-primary" onclick="counter.set(v => v+1)">+</button>
-            </span>
+            <span class="fw-bold">Records: <span id="foundCount"></span>/<span id="totalCount"></span></span>
 
+            <ul class="list-group" id="productsList"></ul>
+
+            <button class="btn btn-primary" id="loadMoreBtn" onclick="fetchQuotes()">Load more</button>
         </div>
-
     </div>
 </body>
 <script>
-    const { useState, useEffect } = RamState();
+    const { useState, useMemo, useEffect, useButton } = RamState();
 
-    const counter = useState(0);
+    const lastId = useState(0);
+    const products = useState([]);
+    const search = useState('', '#searchInput');
+    const totalCount = useState(0, '#totalCount');
+    const foundCount = useState(0, '#foundCount');
 
+    const loadMoreBtn = useButton('#loadMoreBtn', {
+        loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
+    });
 
-    let timout = null;
+    const filteredProducts = useMemo(() => products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase())), [products, search]);
 
-    counter.watchEffect(v => {
+    const removeProduct = (id) => products.set(list => list.filter(item => item.id !== id));
 
-        document.getElementById("counter").innerHTML = v.value;
+    function fetchQuotes() {
+        loadMoreBtn.loading();
+        fetch(`https://dummyjson.com/products?limit=10&skip=${lastId.value}`)
+            .then(response => response.json())
+            .then(data => products.set(list => [...list, ...data.products]))
+            .catch(error => console.error('Error fetching quotes:', error))
+            .finally(() => loadMoreBtn.loading(false));
+    }
 
-        timout = setTimeout(() => counter.set(v => v + 1), 1000);
-
-        return () => clearTimeout(timout);
+    products.watchEffect(({ value }) => {
+        lastId.set(value[value.length - 1]?.id ?? 0);
+        totalCount.set(value.length);
     }, true);
+
+    filteredProducts.watch(({ value }) => {
+        foundCount.set(value.length);
+        document.getElementById('productsList').innerHTML = value.length > 0
+            ? value.map((item) => `
+            <li id="product-${item.id}" class="product-item list-group-item d-flex flex-row gap-3 position-relative">
+                <img src="${item.images[0]}" class="rounded bg-light" width="100" height="100">
+                <div class="d-flex flex-column">
+                    <h5 class="text-primary">#${item.id}</h5>    
+                    <span class="fw-bold">${item.title}</span>    
+                    <span>${item.description}</span>    
+                </div>
+                <span class="position-absolute top-0 end-0 p-2">
+                    <button class="btn-close" onclick="removeProduct(${item.id})"></button>
+                </span>
+            </li>`).join('') : `<li class="list-group-item text-muted">No records found</li>`;
+    });
+
+    useEffect(() => {
+        fetchQuotes();
+    }, []);
+
 </script>
 
 </html>
