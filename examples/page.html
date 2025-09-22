@@ -37,12 +37,13 @@
     const search = useState('', '#searchInput');
     const totalCount = useState(0, '#totalCount');
     const foundCount = useState(0, '#foundCount');
+    const filteredProducts = useMemo(() => {
+        return products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase()));
+    }, [products, search]);
 
     const loadMoreBtn = useButton('#loadMoreBtn', {
         loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
     });
-
-    const filteredProducts = useMemo(() => products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase())), [products, search]);
 
     const removeProduct = (id) => products.set(list => list.filter(item => item.id !== id));
 
