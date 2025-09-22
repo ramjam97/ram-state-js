@@ -3,7 +3,7 @@
  * Description: A vanilla JavaScript state management library inspired by React’s useState, useEffect, and useMemo – but without any framework. It helps you manage stateful data and DOM bindings easily with reactive watchers and side effects.
  * Author: Ram Jam
  * GitHub: https://github.com/ramjam97/ram-state-js
- * Build Date: 2025-09-21 20:13:35 (Asia/Manila)
+ * Build Date: 2025-09-22 10:02:03 (Asia/Manila)
  */
 function RamState(opt = {}) {
 
