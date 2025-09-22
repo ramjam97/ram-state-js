@@ -1,7 +1,7 @@
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.4.0";
+    const version = "v2.5.1";
 
     // Keep track of all states (useState & useButton)
     const allStates = new Set();
