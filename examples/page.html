@@ -40,6 +40,7 @@
                 <span id="totalCount"></span>
             </span>
 
+            <span class="text-muted card p-2" id="message"></span>
             <ul class="list-group" id="productsList"></ul>
 
             <button class="btn btn-primary" id="loadMoreBtn" onclick="fetchProducts()">Load more</button>
@@ -54,6 +55,8 @@
     const search = useState('', '#searchInput');
     const category = useState('', '#categorySelect');
 
+    const messageDiv = useDisplay(false, '#message');
+    const message = useState('', '#message');
     const totalFetch = useState(0, '#totalFetch');
     const totalCount = useState(0, '#totalCount');
 
@@ -67,11 +70,11 @@
 
     const removeProduct = (id) => products.set(list => list.filter(item => item.id !== id));
 
-    function fetchProducts() {
+    function fetchProducts(newList = false) {
         loadMoreBtn.loading();
 
         const limit = 10;
-        const skip = (products.value.length / limit) * limit;
+        const skip = newList ? 0 : (products.value.length / limit) * limit;
 
         let endpoint = `https://dummyjson.com/products`;
         if (category.value !== '') {
@@ -81,7 +84,11 @@
         fetch(`${endpoint}?limit=${limit}&skip=${skip}`)
             .then(response => response.json())
             .then(data => {
-                products.set(list => [...list, ...data.products]);
+                if (newList) {
+                    products.set(data.products);
+                } else {
+                    products.set(list => [...list, ...data.products]);
+                }
                 totalCount.set(data.total);
                 loadMoreBtn.show(products.value.length < data.total);
             })
@@ -97,8 +104,7 @@
     useEffect(() => {
         loadMoreBtn.loading();
         categotyChangeTimeout = setTimeout(() => {
-            products.set([]);
-            fetchProducts();
+            fetchProducts(true);
         }, 500);
         return () => {
             clearTimeout(categotyChangeTimeout);
@@ -113,7 +119,6 @@
             !Number.isInteger(rating) ? `<i class="fa-solid fa-star-half text-warning"></i>` : ''
         ].join('');
     }
-
 
     filteredProducts.watch(({ value }) => {
 
@@ -140,11 +145,13 @@
     });
 
     useEffect(() => {
-        if (filteredProducts.value.length === 0) {
-            document.getElementById('productsList').innerHTML = loadMoreBtn.value.loading ?
-                `<li class="list-group-item text-muted">Loading...</li>` :
-                `<li class="list-group-item text-muted">No records found</li>`;
-        }
+
+        messageDiv.show(filteredProducts.value.length === 0 || loadMoreBtn.value.loading);
+        message.set(
+            loadMoreBtn.value.loading ? 'Loading...' :
+                filteredProducts.value.length === 0 ? 'No records found' : ''
+        );
+
     }, [filteredProducts, loadMoreBtn]);
 
     categories.watchEffect(({ value }) => {
