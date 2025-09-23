@@ -321,7 +321,7 @@ function RamState(opt = {}) {
                 return set(Boolean(!value));
             },
             toggle(value) {
-                return set(value ?? !isShowing);
+                return set(Boolean(value ?? !isShowing));
             },
             watch(cb) {
                 if (typeof cb !== "function") {
