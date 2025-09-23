@@ -257,17 +257,19 @@ Caches computed values and recomputes when dependencies change.
 
 
 
-## ``useButton(selectorOrDOM, options?)``
+## ``useButton(selectorsOrDOM, options?)``
 Manages button states (``loading``, ``disabled``).
 
 **Parameters**
-- ``selectorOrDOM`` → DOM element or CSS selector (supports multiple).
+- ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
 - ``options`` → Customize button behavior.
 ```js
 {
-  state: { disabled: false, loading: false },
+  state: { disabled: false, loading: false, display: true },
   disabled: { class: "disabled" },
-  loading: { html: "", icon: "", class: "loading" }
+  loading: { html: "", icon: "", class: "loading" },
+  shown: { class: "show", displayType: "block" },
+  hidden: { class: "hidden", displayType: "none" },
 }
 
 ```
@@ -277,6 +279,8 @@ Manages button states (``loading``, ``disabled``).
 | `.value` (getter)                          | Returns `{ disabled, loading }`.                     |
 | `.disabled(true/false)`                    | Toggles disabled state.                              |
 | `.loading(true/false)`                     | Toggles loading state (also disables while loading). |
+| `.show(true/false)`                        | Toggles ``display:block`` state.                     |
+| `.hide(true/false)`                        | Toggles ``display:none`` state.                      |
 | `.watch(cb)`                               | Fires on every `.set()`.                             |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
 
