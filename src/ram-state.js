@@ -1,7 +1,7 @@
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.5.1";
+    const version = "v2.6.0";
 
     // Keep track of all states (useState & useButton)
     const allStates = new Set();
@@ -78,6 +78,13 @@ function RamState(opt = {}) {
     }
 
 
+    // HELPER: get DOM elements and return as array of elements
+    const getDomElements = (selectorsOrDOM = null) => {
+        if (selectorsOrDOM instanceof HTMLElement) return [selectorsOrDOM];
+        if (typeof selectorsOrDOM === "string") return Array.from(document.querySelectorAll(selectorsOrDOM));
+        return [];
+    }
+
     // GLOBAL HELPER ------------------------------------------------> END
 
 
@@ -89,23 +96,25 @@ function RamState(opt = {}) {
 
         const sideEffect = { onSet: [], onChange: [] };
 
-        const dom = selector ? document.querySelector(selector) : null;
+        const dom = document.querySelectorAll(selector);
 
         // HELPER: Bind state to element if found
-        if (dom) {
+        dom.forEach(el => {
+
             // initialize DOM from state
-            syncDomModel(dom, data);
+            syncDomModel(el, data);
 
             // DOM → State
-            dom.addEventListener("input", () => {
-                const newVal = extractDomValue(dom);
+            el.addEventListener("input", () => {
+                const newVal = extractDomValue(el);
                 stateAPI.set(newVal);
             });
-            dom.addEventListener("change", () => {
-                const newVal = extractDomValue(dom);
+            el.addEventListener("change", () => {
+                const newVal = extractDomValue(el);
                 stateAPI.set(newVal);
             });
-        }
+
+        });
 
         // HELPER: Generate watch parameters
         const getWatchParams = hasChange => ({ dom, value: data, hasChange });
@@ -192,7 +201,7 @@ function RamState(opt = {}) {
                 data = value;
 
                 // State → DOM
-                if (dom) syncDomModel(dom, data);
+                dom.forEach(el => syncDomModel(el, data));
 
                 // local watchers (onSet)
                 sideEffect.onSet.forEach(w => {
@@ -238,14 +247,119 @@ function RamState(opt = {}) {
     } // useState() end
 
 
+    // API: useDisplay
+    function useDisplay(initialValue, selectorsOrDOM = null, opt = {}) {
+
+        let isShowing = Boolean(initialValue);
+        let dom = [];
+
+        const options = {
+            shown: {
+                class: opt?.shown?.class ?? "show",
+                displayType: opt?.shown?.displayType ?? "block"
+            },
+            hidden: {
+                class: opt?.hidden?.class ?? "hidden",
+                displayType: opt?.hidden?.displayType ?? "none"
+            }
+        }
+
+        const sideEffect = { onSet: [], onChange: [] };
+
+        // HELPER: Generate watch parameters
+        const getWatchParams = hasChange => ({ dom, value: isShowing, hasChange });
+
+        // HELPER: Generate watch effects parameters
+        const getWatchEffectParams = () => ({ dom, value: isShowing });
+
+        // HELPER: sync DOM element with state
+        const updateElemDisplay = () => {
+            dom = getDomElements(selectorsOrDOM);
+            dom.forEach(el => {
+                el.style.setProperty('display', isShowing ? options.shown.displayType : options.hidden.displayType, 'important');
+                el.classList.toggle(options.shown.class, isShowing);
+                el.classList.toggle(options.hidden.class, !isShowing);
+            });
+        }
+
+        // HELPER: set state
+        const set = (value) => {
+
+            const hasChange = !isEqual(isShowing, value);
+
+            isShowing = value;
+
+            // State → DOM
+            updateElemDisplay();
+
+            // local watchers (onSet)
+            sideEffect.onSet.forEach(w => {
+                safeRunCleanUp(w.cleanup);
+                w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
+            });
+
+            // local watchers (onChange only if value changed)
+            if (hasChange) {
+                sideEffect.onChange.forEach(w => {
+                    safeRunCleanUp(w.cleanup);
+                    w.cleanup = safeRun(w.cb, getWatchEffectParams());
+                });
+            }
+
+            return isShowing;
+        }
+
+        const stateAPI = {
+            dom,
+            get value() {
+                return isShowing;
+            },
+            show(value = true) {
+                return set(Boolean(value));
+            },
+            hide(value = true) {
+                return set(Boolean(!value));
+            },
+            toggle(value) {
+                return set(value ?? !isShowing);
+            },
+            watch(cb) {
+                if (typeof cb !== "function") {
+                    console.warn("watch callback must be a function");
+                    return;
+                }
+                sideEffect.onSet.push({ cb, cleanup: safeRun(cb, getWatchParams(false)) });
+            },
+            watchEffect(cb, executeOnMount = false) {
+                if (typeof cb !== "function") {
+                    console.warn("watchEffect callback must be a function");
+                    return;
+                }
+                const watcher = { cb, cleanup: null };
+                if (executeOnMount) {
+                    watcher.cleanup = safeRun(cb, getWatchEffectParams());
+                }
+                sideEffect.onChange.push(watcher);
+            }
+        };
+
+        allStates.add(stateAPI);
+
+        updateElemDisplay();
+
+        return stateAPI;
+    }
+
+
     // API: useButton
-    function useButton(selectorOrDOM, opt = {}) {
+    function useButton(selectorsOrDOM, opt = {}) {
 
         // HELPER: build options structure
         const options = {
             state: {
                 disabled: opt?.state?.disabled ?? false,
-                loading: opt?.state?.loading ?? false
+                loading: opt?.state?.loading ?? false,
+                display: opt?.state?.display ?? true,
             },
             disabled: {
                 class: opt?.disabled?.class ?? "disabled",
@@ -254,11 +368,19 @@ function RamState(opt = {}) {
                 html: opt?.loading?.html ?? "",
                 icon: opt?.loading?.icon ?? "",
                 class: opt?.loading?.class ?? "loading",
+            },
+            shown: {
+                class: opt?.shown?.class ?? "show",
+                displayType: opt?.shown?.displayType ?? "block",
+            },
+            hidden: {
+                class: opt?.hidden?.class ?? "hidden",
+                displayType: opt?.hidden?.displayType ?? "none",
             }
         }
 
         // API: DOM elements with state and default attributes
-        const elements = [...getDomElements(selectorOrDOM)].map(item => {
+        const elements = [...getDomElements(selectorsOrDOM)].map(item => {
 
             if (typeof options.loading.html === 'function') {
                 options.loading.html = options.loading.html(item.innerHTML);
@@ -276,6 +398,14 @@ function RamState(opt = {}) {
                 },
                 disabled: {
                     class: options.disabled.class
+                },
+                shown: {
+                    class: options.shown.class,
+                    displayType: options.shown.displayType
+                },
+                hidden: {
+                    class: options.hidden.class,
+                    displayType: options.hidden.displayType
                 }
             }
         });
@@ -287,6 +417,7 @@ function RamState(opt = {}) {
         let state = {
             disabled: options.state.disabled,
             loading: options.state.loading,
+            display: options.state.display
         };
 
         // HELPER: side effects placeholder
@@ -307,10 +438,15 @@ function RamState(opt = {}) {
                 const configDefault = item.default;
                 const configLoading = item.loading;
                 const configDisabled = item.disabled;
+                const configShown = item.shown;
+                const configHidden = item.hidden;
 
+                el.style.setProperty('display', stateData.display ? configShown.displayType : configHidden.displayType, 'important');
                 el.disabled = stateData.disabled || stateData.loading;
                 el.classList.toggle(configLoading.class, stateData.loading);
                 el.classList.toggle(configDisabled.class, stateData.disabled);
+                el.classList.toggle(configShown.class, stateData.display);
+                el.classList.toggle(configHidden.class, !stateData.display);
                 el.innerHTML = (stateData.loading ? configLoading.html : configDefault.html)
                     + (stateData.loading ? configLoading.icon : '');
             });
@@ -342,13 +478,6 @@ function RamState(opt = {}) {
             return state;
         }
 
-        // HELPER: get DOM elements and return as array of elements
-        function getDomElements() {
-            if (selectorOrDOM instanceof HTMLElement) return [selectorOrDOM];
-            if (typeof selectorOrDOM === "string") return Array.from(document.querySelectorAll(selectorOrDOM));
-            return [];
-        }
-
         const stateAPI = {
             dom,
             get value() {
@@ -359,6 +488,12 @@ function RamState(opt = {}) {
             },
             loading(isLoading = true) {
                 return set({ ...state, ...{ loading: isLoading, disabled: isLoading } })
+            },
+            show(isShowing = true) {
+                return set({ ...state, ...{ display: isShowing } });
+            },
+            hide(isHiding = true) {
+                return set({ ...state, ...{ display: !isHiding } });
             },
             watch(cb) {
                 if (typeof cb !== "function") {
@@ -403,10 +538,26 @@ function RamState(opt = {}) {
 
         if (deps === null || deps === undefined) {
             // deps is undefined or null
-            allStates.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
+            allStates.forEach((dep) => {
+                if ('watchEffect' in dep) {
+                    dep.watchEffect(() => scheduleJob(effect));
+                } else {
+                    if ('watch' in dep) {
+                        dep.watch(() => scheduleJob(effect));
+                    }
+                }
+            });
         } else if (Array.isArray(deps)) {
             // deps is not empty array
-            deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(effect)));
+            deps.forEach((dep) => {
+                if ('watchEffect' in dep) {
+                    dep.watchEffect(() => scheduleJob(effect));
+                } else {
+                    if ('watch' in dep) {
+                        dep.watch(() => scheduleJob(effect));
+                    }
+                }
+            });
         }
 
         // deps is empty array or on-mount
@@ -463,9 +614,10 @@ function RamState(opt = {}) {
 
     return {
         useState,
+        useButton,
+        useDisplay,
         useEffect,
         useMemo,
-        useButton
     };
 
 }

@@ -10,34 +10,53 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- ramstatejs -->
-    <script src="../dist/ram-state.min.js"></script>
+    <script src="../dist/ram-state.js"></script>
 </head>
 
 <body>
-    <div class="container py-3">
+    <div class="container py-3 pb-5">
 
         <div class="d-flex flex-column gap-2">
 
             <h1 class="text-center text-primary">RamState Demo</h1>
 
-            <input type="search" class="form-control" placeholder="search item.." id="searchInput">
+            <div class="d-flex flex-row justify-content-between flex-wrap gap-3">
+                <div class="d-flex flex-row gap-2 align-items-center">
+                    <label class="fw-bold">Catergoy:</label>
+                    <select id="categorySelect" class="form-select">
+                        <option value="" selected>All</option>
+                    </select>
+                </div>
+                <div class="d-flex flex-row gap-2 align-items-center">
+                    <label class="fw-bold">Search:</label>
+                    <input type="search" class="form-control" placeholder="search item.." id="searchInput">
+                </div>
+            </div>
 
-            <span class="fw-bold">Records: <span id="foundCount"></span>/<span id="totalCount"></span></span>
+            <span class="fw-bold">
+                Records:
+                <span id="filteredCount"></span>/<span id="totalFetch"></span>
+                of
+                <span id="totalCount"></span>
+            </span>
 
             <ul class="list-group" id="productsList"></ul>
 
-            <button class="btn btn-primary" id="loadMoreBtn" onclick="fetchQuotes()">Load more</button>
+            <button class="btn btn-primary" id="loadMoreBtn" onclick="fetchProducts()">Load more</button>
         </div>
     </div>
 </body>
 <script>
-    const { useState, useMemo, useEffect, useButton } = RamState();
+    const { useState, useMemo, useEffect, useButton, useDisplay } = RamState();
 
-    const lastId = useState(0);
     const products = useState([]);
+    const categories = useState([]);
     const search = useState('', '#searchInput');
+    const category = useState('', '#categorySelect');
+
+    const totalFetch = useState(0, '#totalFetch');
     const totalCount = useState(0, '#totalCount');
-    const foundCount = useState(0, '#foundCount');
+
     const filteredProducts = useMemo(() => {
         return products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase()));
     }, [products, search]);
@@ -48,24 +67,58 @@
 
     const removeProduct = (id) => products.set(list => list.filter(item => item.id !== id));
 
-    function fetchQuotes() {
+    function fetchProducts() {
         loadMoreBtn.loading();
-        fetch(`https://dummyjson.com/products?limit=10&skip=${lastId.value}`)
+
+        const limit = 10;
+        const skip = (products.value.length / limit) * limit;
+
+        let endpoint = `https://dummyjson.com/products`;
+        if (category.value !== '') {
+            endpoint = `https://dummyjson.com/products/category/${category.value}`;
+        }
+
+        fetch(`${endpoint}?limit=${limit}&skip=${skip}`)
             .then(response => response.json())
-            .then(data => products.set(list => [...list, ...data.products]))
-            .catch(error => console.error('Error fetching quotes:', error))
+            .then(data => {
+                products.set(list => [...list, ...data.products]);
+                totalCount.set(data.total);
+                loadMoreBtn.show(products.value.length < data.total);
+            })
+            .catch(error => console.error('Error fetching products:', error))
             .finally(() => loadMoreBtn.loading(false));
     }
 
-    products.watchEffect(({ value }) => {
-        lastId.set(value[value.length - 1]?.id ?? 0);
-        totalCount.set(value.length);
+    products.watchEffect(() => {
+        totalFetch.set(products.value.length);
     }, true);
 
+    let categotyChangeTimeout = null;
+    useEffect(() => {
+        loadMoreBtn.loading();
+        categotyChangeTimeout = setTimeout(() => {
+            products.set([]);
+            fetchProducts();
+        }, 500);
+        return () => {
+            clearTimeout(categotyChangeTimeout);
+            categotyChangeTimeout = null;
+        }
+    }, [category]);
+
+
+    function getStarRating(rating) {
+        return [
+            ...Array.from({ length: Math.floor(rating) }).map(() => `<i class="fa-solid fa-star text-warning"></i>`),
+            !Number.isInteger(rating) ? `<i class="fa-solid fa-star-half text-warning"></i>` : ''
+        ].join('');
+    }
+
+
     filteredProducts.watch(({ value }) => {
-        foundCount.set(value.length);
-        document.getElementById('productsList').innerHTML = value.length > 0
-            ? value.map((item) => `
+
+        document.getElementById('filteredCount').innerHTML = value.length;
+        document.getElementById('productsList').innerHTML = value.map((item, index) => `
             <li id="product-${item.id}" class="product-item list-group-item d-flex flex-row gap-3 position-relative">
                 <img src="${item.images[0]}" class="rounded bg-light" width="150" height="150">
                 <div class="d-flex flex-column">
@@ -76,23 +129,39 @@
                     <span>Rate: ${item.rating}</span>
                     <span>${getStarRating(item.rating)}</span>
                 </div>
+                <span class="position-absolute top-0 start-0 p-2 text-muted">
+                    ${index + 1}
+                </span>
                 <span class="position-absolute top-0 end-0 p-2">
                     <button class="btn-close" onclick="removeProduct(${item.id})"></button>
                 </span>
-            </li>`).join('') : `<li class="list-group-item text-muted">No records found</li>`;
+            </li>`).join('');
 
     });
 
-    function getStarRating(rating) {
-        const stars = Array.from({ length: Math.floor(rating) }).map(() => `<i class="fa-solid fa-star text-warning"></i>`);
-        if (!Number.isInteger(rating)) {
-            stars.push(`<i class="fa-solid fa-star-half text-warning"></i>`);
+    useEffect(() => {
+        if (filteredProducts.value.length === 0) {
+            document.getElementById('productsList').innerHTML = loadMoreBtn.value.loading ?
+                `<li class="list-group-item text-muted">Loading...</li>` :
+                `<li class="list-group-item text-muted">No records found</li>`;
         }
-        return stars.join('');
-    }
+    }, [filteredProducts, loadMoreBtn]);
+
+    categories.watchEffect(({ value }) => {
+        console.log('category.value:', category.value);
+        console.log('categories.value:', value);
+        document.getElementById('categorySelect').innerHTML = [
+            `<option value="" ${category.value === '' ? 'selected' : ''}>All</option>`,
+            ...value.map(item => `<option value="${item.slug}" ${category.value === item.slug ? 'selected' : ''}>
+                    ${item.name}
+                </option>`)
+        ].join('');
+    }, true);
 
     useEffect(() => {
-        fetchQuotes();
+        fetch(`https://dummyjson.com/products/categories`)
+            .then(response => response.json())
+            .then(data => categories.set(list => [...list, ...data]))
     }, []);
 
 </script>
