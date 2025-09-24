@@ -36,8 +36,7 @@
 <script>
     const { useState, useEffect, useButton } = RamState();
 
-    const counter = useState(0);
-    counter.watchEffect(v => document.getElementById("counter").innerHTML = v.value, true);
+    const counter = useState(0, '#counter');
 
     const btns = useButton('.btn', {
         loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }

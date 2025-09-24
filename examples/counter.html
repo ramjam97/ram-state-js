@@ -14,30 +14,23 @@
 
 <body>
     <div class="container pt-3">
-
         <h1 class="text-center text-primary">RamState Demo</h1>
-
         <div class="d-flex flex-column justify-content-center align-items-center">
-
-            <h5>Counter: <span id="counter"></span></h5>
-
+            <h5>Counter: <span class="counter-text"></span></h5>
             <span>
                 <button class="btn btn-danger" onclick="counter.set(v => v-1)">-</button>
                 <button class="btn btn-secondary" onclick="counter.set(0)">Reset</button>
                 <button class="btn btn-primary" onclick="counter.set(v => v+1)">+</button>
             </span>
-
+            <span>
+                <input type="number" class="form-control mt-3" id="counter" placeholder="enter number">
+            </span>
         </div>
-
     </div>
 </body>
 <script>
     const { useState, useEffect } = RamState();
-
-    const counter = useState(0);
-
-    counter.watchEffect(v => document.getElementById("counter").innerHTML = v.value, true);
-
+    const counter = useState(0, '.counter-text, #counter');
 </script>
 
 </html>

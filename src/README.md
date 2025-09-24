@@ -312,11 +312,25 @@ Manages button states (``loading``, ``disabled``, ``display``).
 - ``options`` → Customize button behavior.
 ```js
 {
-  state: { disabled: false, loading: false, display: true },
-  disabled: { class: "disabled" },
-  loading: { html: "", icon: "", class: "loading" },
-  shown: { class: "show", displayType: "block" },
-  hidden: { class: "hidden", displayType: "none" },
+  state: { 
+    disabled: false, 
+    loading: false,
+    display: true 
+  },
+  disabled: { 
+    class: "disabled" 
+  },
+  loading: {
+    html: "", 
+    icon: "", 
+    class: "loading" 
+  },
+  shown: { 
+    class: "show",
+  },
+  hidden: {
+     class: "hidden", 
+  },
 }
 ```
 **API**
@@ -326,8 +340,8 @@ Manages button states (``loading``, ``disabled``, ``display``).
 | `.dom` (getter)                            | Returns array of DOM Elements.                       |
 | `.disabled(true/false)`                    | Toggles disabled state.                              |
 | `.loading(true/false)`                     | Toggles loading state (also disables while loading). |
-| `.show(true/false)`                        | Toggles ``display:block`` state.                     |
-| `.hide(true/false)`                        | Toggles ``display:none`` state.                      |
+| `.show(true/false)`                        | Removes ``display`` style property.                  |
+| `.hide(true/false)`                        | Toggles ``display:none`` in style property.          |
 | `.watch(cb)`                               | Fires on every `.set()`.                             |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
 
@@ -342,13 +356,23 @@ Manages div states (``display``).
 - ``initialValue`` → Initial state value.
 - ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
 - ``options`` → Customize display behavior.
+```js
+{
+  shown: {
+    class: "show",
+  },
+  hidden: {
+    class: "hidden",
+  }
+}
+```
 **API**
 | Method / Prop                              | Description                                          |
 | ------------------------------------------ | ---------------------------------------------------- |
 | `.value` (getter)                          | Returns Boolean.                                     |
 | `.dom` (getter)                            | Returns array of DOM elements.                       |
-| `.show(true/false)`                        | Toggles ``display:block`` state.                     |
-| `.hide(true/false)`                        | Toggles ``display:none`` state.                      |
+| `.show(true/false)`                        | Removes ``display`` style property.                  |
+| `.hide(true/false)`                        | Toggles ``display:none`` in style property.          |
 | `.watch(cb)`                               | Fires on every `.set()`.                             |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
 

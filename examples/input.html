@@ -31,7 +31,7 @@
         <br>
         <div class="col-md-6 d-flex flex-column gap-2">
             <h5>Memo: <span id="memoText"></span></h5>
-            <input type="text" class="form-control" id="text" placeholder="type here">
+            <input type="text" class="form-control" id="textInput" placeholder="type here">
             <h5>Text: <span id="textContent"></span></h5>
         </div>
         <div class="btn-group">
@@ -50,12 +50,12 @@
 
 <script>
 
-    const text = useState('ram', '#text');
+    const text = useState('ram', '#textInput,#textContent');
     const counter = useState(0);
 
     const memo = useMemo(() => {
         console.log('%cuseMemo', 'color:red', 'is running...');
-        return text.value;
+        return text.value + '-' + counter.value;
     }, [text, counter]);
 
     function handleBacthUpdate() {
@@ -64,7 +64,6 @@
     }
 
     memo.watch(v => document.getElementById("memoText").innerHTML = v.value, true);
-    text.watchEffect(v => document.getElementById("textContent").innerHTML = v.value, true);
     counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 
     useEffect(() => {

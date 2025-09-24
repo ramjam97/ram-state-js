@@ -256,11 +256,9 @@ function RamState(opt = {}) {
         const options = {
             shown: {
                 class: opt?.shown?.class ?? "show",
-                displayType: opt?.shown?.displayType ?? "block"
             },
             hidden: {
                 class: opt?.hidden?.class ?? "hidden",
-                displayType: opt?.hidden?.displayType ?? "none"
             }
         }
 
@@ -276,7 +274,11 @@ function RamState(opt = {}) {
         const updateElemDisplay = () => {
             dom = getDomElements(selectorsOrDOM);
             dom.forEach(el => {
-                el.style.setProperty('display', isShowing ? options.shown.displayType : options.hidden.displayType, 'important');
+                if (isShowing) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
                 el.classList.toggle(options.shown.class, isShowing);
                 el.classList.toggle(options.hidden.class, !isShowing);
             });
@@ -368,7 +370,7 @@ function RamState(opt = {}) {
             },
             shown: {
                 class: opt?.shown?.class ?? "show",
-                displayType: opt?.shown?.displayType ?? "block",
+                displayType: opt?.shown?.displayType ?? "inline-block",
             },
             hidden: {
                 class: opt?.hidden?.class ?? "hidden",
@@ -398,11 +400,9 @@ function RamState(opt = {}) {
                 },
                 shown: {
                     class: options.shown.class,
-                    displayType: options.shown.displayType
                 },
                 hidden: {
                     class: options.hidden.class,
-                    displayType: options.hidden.displayType
                 }
             }
         });
@@ -438,7 +438,12 @@ function RamState(opt = {}) {
                 const configShown = item.shown;
                 const configHidden = item.hidden;
 
-                el.style.setProperty('display', stateData.display ? configShown.displayType : configHidden.displayType, 'important');
+                if (stateData.display) {
+                    el.style.removeProperty('display');
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
+
                 el.disabled = stateData.disabled || stateData.loading;
                 el.classList.toggle(configLoading.class, stateData.loading);
                 el.classList.toggle(configDisabled.class, stateData.disabled);
