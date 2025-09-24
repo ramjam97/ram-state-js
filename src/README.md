@@ -17,7 +17,7 @@ It helps you manage **stateful data** and **DOM bindings** easily with reactive 
 - ✅ ``useState`` → Create reactive state with DOM binding support.
 - ✅ ``useEffect`` → Run side effects when dependencies change.
 - ✅ ``useMemo`` → Cache computed values with dependency tracking.
-- ✅ ``useButton`` → Manage ``loading`` & ``disabled`` states for buttons.
+- ✅ ``useButton`` → Manage ``loading``, ``disabled`` & ``display`` states for buttons.
 - ✅ ``useDisplay`` → Manage display states for DOM Elements.
 - ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
 - ✅ Watchers with cleanup support.
@@ -70,16 +70,20 @@ console.log(counter.value); // 2
 
 // watch every set (always fires)
 counter.watch(({ value, hasChange }) => {
+  
   console.log("Set →", value, "changed:", hasChange);
-  // cleanup (optional)
-  return () => console.log("Clean up");
+  
+  return () => console.log("Clean up"); // cleanup (optional)
+
 });
 
 // watch only when value changes
 counter.watchEffect(({ value }) => {
+  
   console.log("Changed →", value);
-  // cleanup 
-  return () => console.log("Clean up");
+  
+  return () => console.log("Clean up"); // cleanup 
+
 }, true);
 ```
 
@@ -158,7 +162,9 @@ sum.watch(({ value }) => {
 console.log(sum.value); // 30
 
 num1.set(50); 
+
 // auto recomputes → Sum updated: 70
+console.log(sum.value); // 70
 
 ```
 
@@ -222,12 +228,12 @@ saveBtn.watchEffect(({ state }) => {
 }, true);
 
 // trigger state changes using .hide()
-saveBtn.hide();   // hide element
-saveBtn.hide(false);   // show element
+saveBtn.hide();      // hide element
+saveBtn.hide(false); // show element
 
 // trigger state changes using .show()
-saveBtn.show();   // show element
-saveBtn.show(false);   // hide element
+saveBtn.show();      // show element
+saveBtn.show(false); // hide element
 ```
 ✅ Works with multiple buttons too:
 ```html
