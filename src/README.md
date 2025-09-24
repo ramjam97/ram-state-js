@@ -313,23 +313,23 @@ Manages button states (``loading``, ``disabled``, ``display``).
 ```js
 {
   state: { 
-    disabled: false, 
-    loading: false,
-    display: true 
+    disabled: false,   // boolean
+    loading: false,    // boolean
+    display: true      // boolean
   },
   disabled: { 
-    class: "disabled" 
+    class: "disabled"  // string
   },
   loading: {
-    html: "", 
-    icon: "", 
-    class: "loading" 
+    html: "",          // string or fn (callback with detaultButtonText as params)
+    icon: "",          // string
+    class: "loading"   // string
   },
   shown: { 
-    class: "show",
+    class: "show",     // string
   },
   hidden: {
-     class: "hidden", 
+    class: "hidden",   // string
   },
 }
 ```
@@ -359,10 +359,10 @@ Manages div states (``display``).
 ```js
 {
   shown: {
-    class: "show",
+    class: "show",   // string
   },
   hidden: {
-    class: "hidden",
+    class: "hidden", // string
   }
 }
 ```
