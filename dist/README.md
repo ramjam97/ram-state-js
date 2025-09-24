@@ -255,7 +255,7 @@ multiBtn.hide(); // hide multiple buttons
 ## `RamState(options?)`
 Creates a new instance.
 ```js
-const { useState, useEffect, useMemo, useButton } = RamState({ debug: true });
+const { useState, useEffect, useMemo, useButton, useDisplay } = RamState({ debug: true });
 ```
 **Options**
 | Key   | Type    | Default | Description               |
