@@ -18,6 +18,7 @@ It helps you manage **stateful data** and **DOM bindings** easily with reactive 
 - ✅ ``useEffect`` → Run side effects when dependencies change.
 - ✅ ``useMemo`` → Cache computed values with dependency tracking.
 - ✅ ``useButton`` → Manage ``loading`` & ``disabled`` states for buttons.
+- ✅ ``useDisplay`` → Manage display states for DOM Elements.
 - ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
 - ✅ Watchers with cleanup support.
 - ✅ Internal scheduler to batch updates (avoids unnecessary re-renders).
@@ -167,8 +168,14 @@ const { useButton } = RamState();
 
 // link to a button by selector
 const saveBtn = useButton("#saveBtn", {
-  loading: { html: "Saving...", icon: " ⏳" },
-  disabled: { class: "btn-disabled" }
+  loading: { 
+    html: "Saving...", 
+    icon: " ⏳" ,
+    class: "loading"
+  },
+  disabled: { 
+    class: "btn-disabled" 
+  }
 });
 
 // watch button state
@@ -197,6 +204,44 @@ multiBtn.disabled(true);
 <button id="saveBtn">Save</button>
 ```
 
+### 5. ``useDisplay``
+```js
+const { useDisplay } = RamState();
+
+// link to a button by selector
+const saveBtn = useDisplay(true,"#saveBtn");
+
+// watch button state
+saveBtn.watch(({ state }) => {
+  console.log("Button set:", state);
+});
+
+// watch only when it changes
+saveBtn.watchEffect(({ state }) => {
+  console.log("Button changed:", state);
+}, true);
+
+// trigger state changes using .hide()
+saveBtn.hide();   // hide element
+saveBtn.hide(false);   // show element
+
+// trigger state changes using .show()
+saveBtn.show();   // show element
+saveBtn.show(false);   // hide element
+```
+✅ Works with multiple buttons too:
+```html
+const multiBtn = useDisplay(true,".btn");
+multiBtn.hide(); // hide multiple buttons
+```
+🧪 Example HTML
+```html
+<button class="btn">Btn 1</button>
+<button class="btn">Btn 2</button>
+<button id="saveBtn">Save</button>
+```
+
+
 
 
 ## 🔑 API Reference
@@ -219,7 +264,7 @@ Creates a reactive state.
 
 **Parameters**
 - ``initialValue`` → Initial state value.
-- ``selector?`` → Optional CSS selector to auto-bind DOM element.
+- ``selectors?`` → Optional CSS selector to auto-bind DOM element.
 
 
 
@@ -227,6 +272,7 @@ Creates a reactive state.
 | Method / Prop                              | Description                                                                 |
 | ------------------------------------------ | --------------------------------------------------------------------------- |
 | `.value` (getter)                          | Returns current state.                                                      |
+| `.dom` (getter)                            | Returns array of DOM Elements.                                              |
 | `.set(valueOrFn)`                          | Updates state. Accepts value or updater `(prev) => next`.                   |
 | `.watch(cb)`                               | Fires on every `.set()` (even if unchanged).                                |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only when value changes. Runs immediately if `executeOnMount = true`. |
@@ -257,8 +303,9 @@ Caches computed values and recomputes when dependencies change.
 
 
 
+
 ## ``useButton(selectorsOrDOM, options?)``
-Manages button states (``loading``, ``disabled``).
+Manages button states (``loading``, ``disabled``, ``display``).
 
 **Parameters**
 - ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
@@ -271,18 +318,41 @@ Manages button states (``loading``, ``disabled``).
   shown: { class: "show", displayType: "block" },
   hidden: { class: "hidden", displayType: "none" },
 }
-
 ```
 **API**
 | Method / Prop                              | Description                                          |
 | ------------------------------------------ | ---------------------------------------------------- |
-| `.value` (getter)                          | Returns `{ disabled, loading }`.                     |
+| `.value` (getter)                          | Returns `{ disabled, loading, display}`.             |
+| `.dom` (getter)                            | Returns array of DOM Elements.                       |
 | `.disabled(true/false)`                    | Toggles disabled state.                              |
 | `.loading(true/false)`                     | Toggles loading state (also disables while loading). |
 | `.show(true/false)`                        | Toggles ``display:block`` state.                     |
 | `.hide(true/false)`                        | Toggles ``display:none`` state.                      |
 | `.watch(cb)`                               | Fires on every `.set()`.                             |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
+
+
+
+
+
+## ``useDisplay(initialValue, selectorsOrDOM, options?)``
+Manages div states (``display``).
+
+**Parameters**
+- ``initialValue`` → Initial state value.
+- ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
+- ``options`` → Customize display behavior.
+**API**
+| Method / Prop                              | Description                                          |
+| ------------------------------------------ | ---------------------------------------------------- |
+| `.value` (getter)                          | Returns Boolean.                                     |
+| `.dom` (getter)                            | Returns array of DOM elements.                       |
+| `.show(true/false)`                        | Toggles ``display:block`` state.                     |
+| `.hide(true/false)`                        | Toggles ``display:none`` state.                      |
+| `.watch(cb)`                               | Fires on every `.set()`.                             |
+| `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
+
+
 
 
 ---
@@ -301,4 +371,4 @@ Manages button states (``loading``, ``disabled``).
 
 ## 📜 License
 
-MIT License
+MIT License 

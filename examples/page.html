@@ -155,8 +155,6 @@
     }, [filteredProducts, loadMoreBtn]);
 
     categories.watchEffect(({ value }) => {
-        console.log('category.value:', category.value);
-        console.log('categories.value:', value);
         document.getElementById('categorySelect').innerHTML = [
             `<option value="" ${category.value === '' ? 'selected' : ''}>All</option>`,
             ...value.map(item => `<option value="${item.slug}" ${category.value === item.slug ? 'selected' : ''}>

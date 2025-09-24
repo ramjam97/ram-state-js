@@ -320,9 +320,6 @@ function RamState(opt = {}) {
             hide(value = true) {
                 return set(Boolean(!value));
             },
-            toggle(value) {
-                return set(Boolean(value ?? !isShowing));
-            },
             watch(cb) {
                 if (typeof cb !== "function") {
                     console.warn("watch callback must be a function");
