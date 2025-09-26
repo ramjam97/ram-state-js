@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 2.6.0  
+Version: 2.7.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -37,7 +37,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.6.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.7.0/dist/ram-state.min.js"></script>
 ```
 
 
@@ -265,12 +265,12 @@ const { useState, useEffect, useMemo, useButton, useDisplay } = RamState({ debug
 
 
 
-## `useState(initialValue, selector?)`
+## `useState(initialValue, selectorsOrDOM?)`
 Creates a reactive state.   
 
 **Parameters**
 - ``initialValue`` → Initial state value.
-- ``selectors?`` → Optional CSS selector to auto-bind DOM element.
+- ``selectorsOrDOM?`` → DOM element or CSS selector (supports multiple).
 
 
 

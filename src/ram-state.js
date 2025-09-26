@@ -1,7 +1,7 @@
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.6.0";
+    const version = "v2.7.0";
 
     // Keep track of all states (useState & useButton)
     const allStates = new Set();
@@ -80,9 +80,21 @@ function RamState(opt = {}) {
 
     // HELPER: get DOM elements and return as array of elements
     const getDomElements = (selectorsOrDOM = null) => {
-        if (selectorsOrDOM instanceof HTMLElement) return [selectorsOrDOM];
-        if (typeof selectorsOrDOM === "string") return Array.from(document.querySelectorAll(selectorsOrDOM));
+        if (selectorsOrDOM instanceof Array) {
+
+            const elements = [];
+            selectorsOrDOM.forEach(item => {
+                if (item instanceof HTMLElement) elements.push(item);
+                if (typeof item === "string") elements.push(...Array.from(document.querySelectorAll(item)));
+            });
+            return elements;
+
+        } else {
+            if (selectorsOrDOM instanceof HTMLElement) return [selectorsOrDOM];
+            if (typeof selectorsOrDOM === "string") return Array.from(document.querySelectorAll(selectorsOrDOM));
+        }
         return [];
+
     }
 
     // GLOBAL HELPER ------------------------------------------------> END
@@ -90,13 +102,13 @@ function RamState(opt = {}) {
 
 
     // API: useState
-    function useState(initialValue, selector = null) {
+    function useState(initialValue, selectorsOrDom = null) {
 
         let data = initialValue;
 
         const sideEffect = { onSet: [], onChange: [] };
 
-        const dom = document.querySelectorAll(selector);
+        const dom = getDomElements(selectorsOrDom);
 
         // HELPER: Bind state to element if found
         dom.forEach(el => {
