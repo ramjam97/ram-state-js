@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 2.7.0  
+Version: 2.8.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -18,7 +18,6 @@ It helps you manage **stateful data** and **DOM bindings** easily with reactive 
 - ✅ ``useEffect`` → Run side effects when dependencies change.
 - ✅ ``useMemo`` → Cache computed values with dependency tracking.
 - ✅ ``useButton`` → Manage ``loading``, ``disabled`` & ``display`` states for buttons.
-- ✅ ``useDisplay`` → Manage display states for DOM Elements.
 - ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
 - ✅ Watchers with cleanup support.
 - ✅ Internal scheduler to batch updates (avoids unnecessary re-renders).
@@ -37,7 +36,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.7.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.8.0/dist/ram-state.min.js"></script>
 ```
 
 
@@ -210,43 +209,6 @@ multiBtn.disabled(true);
 <button id="saveBtn">Save</button>
 ```
 
-### 5. ``useDisplay``
-```js
-const { useDisplay } = RamState();
-
-// link to a button by selector
-const saveBtn = useDisplay(true,"#saveBtn");
-
-// watch button state
-saveBtn.watch(({ state }) => {
-  console.log("Button set:", state);
-});
-
-// watch only when it changes
-saveBtn.watchEffect(({ state }) => {
-  console.log("Button changed:", state);
-}, true);
-
-// trigger state changes using .hide()
-saveBtn.hide();      // hide element
-saveBtn.hide(false); // show element
-
-// trigger state changes using .show()
-saveBtn.show();      // show element
-saveBtn.show(false); // hide element
-```
-✅ Works with multiple buttons too:
-```html
-const multiBtn = useDisplay(true,".btn");
-multiBtn.hide(); // hide multiple buttons
-```
-🧪 Example HTML
-```html
-<button class="btn">Btn 1</button>
-<button class="btn">Btn 2</button>
-<button id="saveBtn">Save</button>
-```
-
 
 
 
@@ -351,36 +313,6 @@ Manages button states (``loading``, ``disabled``, ``display``).
 | `.watch(cb)`                               | Fires on every `.set()`.                             |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
 
-
-
-
-
-## ``useDisplay(initialValue, selectorsOrDOM, options?)``
-Manages div states (``display``).
-
-**Parameters**
-- ``initialValue`` → Initial state value.
-- ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
-- ``options`` → Customize display behavior.
-```js
-{
-  shown: {
-    class: "show",   // string
-  },
-  hidden: {
-    class: "hidden", // string
-  }
-}
-```
-**API**
-| Method / Prop                              | Description                                          |
-| ------------------------------------------ | ---------------------------------------------------- |
-| `.value` (getter)                          | Returns Boolean.                                     |
-| `.dom` (getter)                            | Returns array of DOM elements.                       |
-| `.show(true/false)`                        | Removes ``display`` style property.                  |
-| `.hide(true/false)`                        | Toggles ``display:none`` in style property.          |
-| `.watch(cb)`                               | Fires on every `.set()`.                             |
-| `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
 
 
 

@@ -1,7 +1,7 @@
 function RamState(opt = {}) {
 
     // library version
-    const version = "v2.7.0";
+    const version = "v2.8.0";
 
     // Keep track of all states (useState & useButton)
     const allStates = new Set();
@@ -98,7 +98,6 @@ function RamState(opt = {}) {
     }
 
     // GLOBAL HELPER ------------------------------------------------> END
-
 
 
     // API: useState
@@ -259,107 +258,94 @@ function RamState(opt = {}) {
     } // useState() end
 
 
-    // API: useDisplay
-    function useDisplay(initialValue, selectorsOrDOM = null, opt = {}) {
+    // API: global watcher
+    function useEffect(cb, deps = null) {
 
-        let isShowing = Boolean(initialValue);
-        let dom = [];
-
-        const options = {
-            shown: {
-                class: opt?.shown?.class ?? "show",
-            },
-            hidden: {
-                class: opt?.hidden?.class ?? "hidden",
-            }
+        if (typeof cb !== "function") {
+            console.warn("useEffect callback must be a function");
+            return;
         }
 
-        const sideEffect = { onSet: [], onChange: [] };
+        let cleanup;
 
-        // HELPER: Generate watch parameters
-        const getWatchParams = hasChange => ({ dom, value: isShowing, hasChange });
+        function effect() {
+            safeRunCleanUp(cleanup);
+            cleanup = safeRun(cb);
+        }
+
+        if (deps === null || deps === undefined) {
+            // deps is undefined or null
+            allStates.forEach((dep) => {
+                if ('watchEffect' in dep) {
+                    dep.watchEffect(() => scheduleJob(effect));
+                } else {
+                    if ('watch' in dep) {
+                        dep.watch(() => scheduleJob(effect));
+                    }
+                }
+            });
+        } else if (Array.isArray(deps)) {
+            // deps is not empty array
+            deps.forEach((dep) => {
+                if ('watchEffect' in dep) {
+                    dep.watchEffect(() => scheduleJob(effect));
+                } else {
+                    if ('watch' in dep) {
+                        dep.watch(() => scheduleJob(effect));
+                    }
+                }
+            });
+        }
+
+        // deps is empty array or on-mount
+        effect();
+
+    } // useEffect() end
+
+    // API: useMemo
+    function useMemo(factory, deps = []) {
+
+        let memoizedValue;
+
+        // side effects
+        let sideEffect = [];
 
         // HELPER: Generate watch effects parameters
-        const getWatchEffectParams = () => ({ dom, value: isShowing });
+        const getWatchEffectParams = () => ({ value: memoizedValue });
 
-        // HELPER: sync DOM element with state
-        const updateElemDisplay = () => {
-            dom = getDomElements(selectorsOrDOM);
-            dom.forEach(el => {
-                if (isShowing) {
-                    el.style.removeProperty('display');
-                } else {
-                    el.style.setProperty('display', 'none', 'important');
-                }
-                el.classList.toggle(options.shown.class, isShowing);
-                el.classList.toggle(options.hidden.class, !isShowing);
-            });
-        }
+        function compute() {
 
-        // HELPER: set state
-        const set = (value) => {
+            memoizedValue = factory();
 
-            const hasChange = !isEqual(isShowing, value);
-
-            isShowing = value;
-
-            // State → DOM
-            updateElemDisplay();
-
-            // local watchers (onSet)
-            sideEffect.onSet.forEach(w => {
+            // local watchers
+            sideEffect.forEach(w => {
                 safeRunCleanUp(w.cleanup);
-                w.cleanup = safeRun(w.cb, getWatchParams(hasChange));
+                w.cleanup = safeRun(w.cb, getWatchEffectParams());
             });
 
-            // local watchers (onChange only if value changed)
-            if (hasChange) {
-                sideEffect.onChange.forEach(w => {
-                    safeRunCleanUp(w.cleanup);
-                    w.cleanup = safeRun(w.cb, getWatchEffectParams());
-                });
-            }
-
-            return isShowing;
+            return memoizedValue;
         }
 
-        const stateAPI = {
-            dom,
+        // auto-subscribe to deps
+        deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(compute)));
+
+        // initial compute
+        compute();
+
+        return {
             get value() {
-                return isShowing;
-            },
-            show(value = true) {
-                return set(Boolean(value));
-            },
-            hide(value = true) {
-                return set(Boolean(!value));
+                return memoizedValue;
             },
             watch(cb) {
-                if (typeof cb !== "function") {
-                    console.warn("watch callback must be a function");
-                    return;
-                }
-                sideEffect.onSet.push({ cb, cleanup: safeRun(cb, getWatchParams(false)) });
-            },
-            watchEffect(cb, executeOnMount = false) {
                 if (typeof cb !== "function") {
                     console.warn("watchEffect callback must be a function");
                     return;
                 }
-                const watcher = { cb, cleanup: null };
-                if (executeOnMount) {
-                    watcher.cleanup = safeRun(cb, getWatchEffectParams());
-                }
-                sideEffect.onChange.push(watcher);
+                sideEffect.push({ cb, cleanup: safeRun(cb, getWatchEffectParams()) });
             }
         };
 
-        allStates.add(stateAPI);
-
-        updateElemDisplay();
-
-        return stateAPI;
-    }
+    }// useMemo() end
 
 
     // API: useButton
@@ -535,103 +521,13 @@ function RamState(opt = {}) {
 
     } // useButton() end
 
-    // API: global watcher
-    function useEffect(cb, deps = null) {
-
-        if (typeof cb !== "function") {
-            console.warn("useEffect callback must be a function");
-            return;
-        }
-
-        let cleanup;
-
-        function effect() {
-            safeRunCleanUp(cleanup);
-            cleanup = safeRun(cb);
-        }
-
-        if (deps === null || deps === undefined) {
-            // deps is undefined or null
-            allStates.forEach((dep) => {
-                if ('watchEffect' in dep) {
-                    dep.watchEffect(() => scheduleJob(effect));
-                } else {
-                    if ('watch' in dep) {
-                        dep.watch(() => scheduleJob(effect));
-                    }
-                }
-            });
-        } else if (Array.isArray(deps)) {
-            // deps is not empty array
-            deps.forEach((dep) => {
-                if ('watchEffect' in dep) {
-                    dep.watchEffect(() => scheduleJob(effect));
-                } else {
-                    if ('watch' in dep) {
-                        dep.watch(() => scheduleJob(effect));
-                    }
-                }
-            });
-        }
-
-        // deps is empty array or on-mount
-        effect();
-
-    } // useEffect() end
-
-    // API: useMemo
-    function useMemo(factory, deps = []) {
-
-        let memoizedValue;
-
-        // side effects
-        let sideEffect = [];
-
-        // HELPER: Generate watch effects parameters
-        const getWatchEffectParams = () => ({ value: memoizedValue });
-
-        function compute() {
-
-            memoizedValue = factory();
-
-            // local watchers
-            sideEffect.forEach(w => {
-                safeRunCleanUp(w.cleanup);
-                w.cleanup = safeRun(w.cb, getWatchEffectParams());
-            });
-
-            return memoizedValue;
-        }
-
-        // auto-subscribe to deps
-        deps.forEach((dep) => dep?.watchEffect(() => scheduleJob(compute)));
-
-        // initial compute
-        compute();
-
-        return {
-            get value() {
-                return memoizedValue;
-            },
-            watch(cb) {
-                if (typeof cb !== "function") {
-                    console.warn("watchEffect callback must be a function");
-                    return;
-                }
-                sideEffect.push({ cb, cleanup: safeRun(cb, getWatchEffectParams()) });
-            }
-        };
-
-    }// useMemo() end
-
     if (opt.debug ?? true) console.log('%cRamState', 'color:cyan', version, 'initialized 🚀');
 
     return {
         useState,
-        useButton,
-        useDisplay,
         useEffect,
         useMemo,
+        useButton,
     };
 
 }

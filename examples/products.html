@@ -48,23 +48,24 @@
     </div>
 </body>
 <script>
-    const { useState, useMemo, useEffect, useButton, useDisplay } = RamState();
+    const { useState, useMemo, useEffect, useButton } = RamState();
 
     const products = useState([]);
     const categories = useState([]);
     const search = useState('', '#searchInput');
     const category = useState('', '#categorySelect');
 
-    const messageDiv = useDisplay(false, '#message');
-    const message = useState('', '#message');
+    const message = useState(null, '#message');
     const totalFetch = useState(0, '#totalFetch');
     const totalCount = useState(0, '#totalCount');
+
+    const btnStatus = useState(null);
 
     const filteredProducts = useMemo(() => {
         return products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase()));
     }, [products, search]);
 
-    const loadMoreBtn = useButton('#loadMoreBtn', {
+    const loadMoreBtn = useButton(['#loadMoreBtn'], {
         loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
     });
 
@@ -144,12 +145,15 @@
 
     });
 
+    message.watchEffect(({ value }) => {
+        document.getElementById('message').style.display = value ? 'block' : 'none';
+    }, true);
+
     useEffect(() => {
 
-        messageDiv.show(filteredProducts.value.length === 0 || loadMoreBtn.value.loading);
         message.set(
             loadMoreBtn.value.loading ? 'Loading...' :
-                filteredProducts.value.length === 0 ? 'No records found' : ''
+                filteredProducts.value.length === 0 ? 'No records found' : null
         );
 
     }, [filteredProducts, loadMoreBtn]);
