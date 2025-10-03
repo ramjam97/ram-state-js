@@ -47,21 +47,15 @@
 
 </body>
 <script>
-    const { useState, useEffect, useButton, useMemo } = RamState();
+    const { useState, useEffect, useMemo } = RamState();
 
     const todo = useState([]);
     const filterBy = useState('active', "#filterBy");
     const id = useState(0);
 
     document.getElementById('clearBtn').addEventListener('click', (e) => {
-
-        const { loading } = useButton('#clearBtn', { loading: { icon: "⏳" } });
-        loading();
-
         filterBy.set('active');
         todo.set([]);
-
-        setTimeout(() => loading(false), 1000);
     });
 
     const filteredTodo = useMemo(() => {
@@ -85,6 +79,8 @@
         });
     }, [todo, filterBy]);
 
+    const removeTask = (id) => todo.set(list => list.filter(item => item.id !== id));
+    const toggleCompleted = (id) => todo.set(list => list.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
 
     filteredTodo.watch(({ value }) => {
 
@@ -112,14 +108,6 @@
             e.target.value = '';
         }
     });
-
-    function removeTask(id) {
-        todo.set(list => list.filter(item => item.id !== id));
-    }
-
-    function toggleCompleted(id) {
-        todo.set(list => list.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
-    }
 
 </script>
 

@@ -1,6 +1,6 @@
 {
   "name": "RamStateJs",
-  "version": "2.8.0",
+  "version": "3.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

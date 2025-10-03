@@ -48,7 +48,7 @@
     </div>
 </body>
 <script>
-    const { useState, useMemo, useEffect, useButton } = RamState();
+    const { useState, useMemo, useEffect } = RamState();
 
     const products = useState([]);
     const categories = useState([]);
@@ -59,20 +59,23 @@
     const totalFetch = useState(0, '#totalFetch');
     const totalCount = useState(0, '#totalCount');
 
-    const btnStatus = useState(null);
+    const loadMoreBtn = useState({ show: true, loading: false });
+
+    loadMoreBtn.watchEffect(({ value }) => {
+        document.getElementById('loadMoreBtn').style.display = value.show ? 'block' : 'none';
+        document.getElementById('loadMoreBtn').innerHTML = value.loading ? 'Loading...' : 'Load more';
+        document.getElementById('loadMoreBtn').disabled = value.loading;
+    }, true);
 
     const filteredProducts = useMemo(() => {
         return products.value.filter(product => product.title.toLowerCase().includes(search.value.toLowerCase()));
     }, [products, search]);
 
-    const loadMoreBtn = useButton(['#loadMoreBtn'], {
-        loading: { icon: ' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>' }
-    });
-
     const removeProduct = (id) => products.set(list => list.filter(item => item.id !== id));
 
     function fetchProducts(newList = false) {
-        loadMoreBtn.loading();
+
+        loadMoreBtn.set(v => ({ ...v, loading: true }));
 
         const limit = 10;
         const skip = newList ? 0 : (products.value.length / limit) * limit;
@@ -91,10 +94,10 @@
                     products.set(list => [...list, ...data.products]);
                 }
                 totalCount.set(data.total);
-                loadMoreBtn.show(products.value.length < data.total);
+                loadMoreBtn.set(v => ({ ...v, show: products.value.length < data.total }));
             })
             .catch(error => console.error('Error fetching products:', error))
-            .finally(() => loadMoreBtn.loading(false));
+            .finally(() => loadMoreBtn.set(v => ({ ...v, loading: false })));
     }
 
     products.watchEffect(() => {
@@ -103,7 +106,7 @@
 
     let categotyChangeTimeout = null;
     useEffect(() => {
-        loadMoreBtn.loading();
+        loadMoreBtn.set(v => ({ ...v, loading: true }));
         categotyChangeTimeout = setTimeout(() => {
             fetchProducts(true);
         }, 500);

@@ -67,12 +67,48 @@
                                 <option value="g">G</option>
                             </select>
                         </div>
+
                         <div class="form-group mb-3">
                             <label class="form-label">
                                 <input type="checkbox" class="form-check-input" name="completed">
                                 Completed
                             </label>
                         </div>
+
+                        <div class="d-flex flex-row gap-2 mb-3">
+                            <label class="form-label">Radio</label>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    A <input class="form-check-input" type="radio" name="letters" value="A">
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    B <input class="form-check-input" type="radio" name="letters" value="B">
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    C <input class="form-check-input" type="radio" name="letters" value="C">
+                                </label>
+                            </div>
+                        </div>
+
+
+                        <div class="d-flex flex-row gap-2 mb-3">
+                            <label class="form-label">Multiple Select</label>
+                            <label class="form-label">
+                                A <input type="checkbox" class="form-check-input" name="multiple_select" value="A">
+                            </label>
+                            <label class="form-label">
+                                B <input type="checkbox" class="form-check-input" name="multiple_select" value="B">
+                            </label>
+                            <label class="form-label">
+                                C <input type="checkbox" class="form-check-input" name="multiple_select" value="C">
+                            </label>
+                        </div>
+
+
                     </form>
                 </div>
             </div>
@@ -97,6 +133,7 @@
     const gender = useState('male', '#formData select[name="gender"]');
     const category = useState(['a', 'b'], '#formData select[name="category"]');
     const completed = useState(false, '#formData input[name="completed"]');
+    const radio = useState('A', '#formData input[name="letters"]');
 
     useEffect(() => {
 
@@ -106,10 +143,11 @@
             birthDate: dob.value,
             gender: gender.value,
             category: category.value,
-            completed: completed.value
+            completed: completed.value,
+            radio: radio.value
         }, null, 2);
 
-    }, [firstName, lastName, dob, gender, category, completed]);
+    }, [firstName, lastName, dob, gender, category, completed, radio]);
 
 </script>
 

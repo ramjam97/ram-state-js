@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 2.8.0  
+Version: 3.0.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -17,7 +17,6 @@ It helps you manage **stateful data** and **DOM bindings** easily with reactive 
 - ✅ ``useState`` → Create reactive state with DOM binding support.
 - ✅ ``useEffect`` → Run side effects when dependencies change.
 - ✅ ``useMemo`` → Cache computed values with dependency tracking.
-- ✅ ``useButton`` → Manage ``loading``, ``disabled`` & ``display`` states for buttons.
 - ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
 - ✅ Watchers with cleanup support.
 - ✅ Internal scheduler to batch updates (avoids unnecessary re-renders).
@@ -36,15 +35,19 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v2.8.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v3.0.0/dist/ram-state.min.js"></script>
 ```
 
 
 ### Initialize RamState
 
 ```js
-const { useState, useEffect } = RamState();
+const { version, useState, useMemo, useEffect } = RamState();
+
+// ramstate version
+console.log(version) // v3.0.0
 ```
+
 
 ---
 
@@ -104,48 +107,28 @@ const counter = useState(0, "#counterText");
 ```js
 const { useState } = RamState();
 
-const name = useState("John", "#nameInput");
+// example of multiple DOM Bindings
 
+// example 1: using string
+const name = useState("John", "#nameInput,.nameText"); 
+
+// example 2: using array of strings
+const name = useState("John", ["#nameInput", '.nameText']);
+
+// example 3: using array of strings and DOM Element
+const name = useState("John", ["#nameInput", document.querySelector('.nameText')]);
 ```
 
 ✅ Automatically syncs with DOM if you provide a selector.
 
 ```html
 <input id="nameInput" type="text" />
+<span class="nameText"></span>
 
 ```
 
 
-### 2. ``useEffect``
-
-```js
-const { useState, useEffect } = RamState();
-
-const count = useState(0);
-
-
-// runs once at mount
-useEffect(() => {
-  console.log("Mounted");
-}, []);
-
-// re-run whenever count changes
-useEffect(() => {
-  console.log("Count changed:", count.value);
-  // clean up (optional)
-  return () => console.log('clean up');
-}, [count]);
-
-// run on every state change
-useEffect(() => {
-  console.log("Something changed!");
-  // clean up (optional)
-  return () => console.log('clean up');
-});
-```
-
-
-### 3. ``useMemo``
+### 2. ``useMemo``
 ```js
 const { useState, useMemo } = RamState();
 
@@ -167,47 +150,41 @@ console.log(sum.value); // 70
 
 ```
 
-### 4. ``useButton``
+
+### 3. ``useEffect``
+
 ```js
-const { useButton } = RamState();
+const { useState, useMemo, useEffect } = RamState();
 
-// link to a button by selector
-const saveBtn = useButton("#saveBtn", {
-  loading: { 
-    html: "Saving...", 
-    icon: " ⏳" ,
-    class: "loading"
-  },
-  disabled: { 
-    class: "btn-disabled" 
-  }
+const count = useState(0);
+
+
+// runs once at mount
+useEffect(() => {
+  console.log("Mounted");
+}, []);
+
+// re-run whenever count changes
+useEffect(() => {
+  
+  console.log("Count changed:", count.value);
+  
+  // clean up (optional)
+  return () => console.log('clean up');
+
+}, [count]);
+
+// run on every state change
+useEffect(() => {
+  
+  console.log("Something changed!");
+  
+  // clean up (optional)
+  return () => console.log('clean up');
+
 });
-
-// watch button state
-saveBtn.watch(({ state }) => {
-  console.log("Button set:", state);
-});
-
-// watch only when it changes
-saveBtn.watchEffect(({ state }) => {
-  console.log("Button changed:", state);
-}, true);
-
-// trigger state changes
-saveBtn.loading(true);   // shows "Saving... ⏳"
-setTimeout(() => saveBtn.loading(false), 2000);
-
 ```
-✅ Works with multiple buttons too:
-```html
-const multiBtn = useButton(".submitBtn");
-multiBtn.disabled(true);
-```
-🧪 Example HTML
-```html
-<input id="nameInput" placeholder="Type your name..." />
-<button id="saveBtn">Save</button>
-```
+
 
 
 
@@ -217,13 +194,8 @@ multiBtn.disabled(true);
 ## `RamState(options?)`
 Creates a new instance.
 ```js
-const { useState, useEffect, useMemo, useButton, useDisplay } = RamState({ debug: true });
+const { version, useState, useMemo, useEffect } = RamState();
 ```
-**Options**
-| Key   | Type    | Default | Description               |
-| ----- | ------- | ------- | ------------------------- |
-| debug | boolean | `true`  | Logs version info on init |
-
 
 
 
@@ -231,9 +203,8 @@ const { useState, useEffect, useMemo, useButton, useDisplay } = RamState({ debug
 Creates a reactive state.   
 
 **Parameters**
-- ``initialValue`` → Initial state value.
-- ``selectorsOrDOM?`` → DOM element or CSS selector (supports multiple).
-
+- ``initialValue``: ``any`` → Initial state value.
+- ``selectorsOrDOM?``: (``null``|``string``|``array``) → DOM element or CSS selector (supports multiple).
 
 
 **API**
@@ -247,21 +218,13 @@ Creates a reactive state.
 
 
 
-## ``useEffect(callback, deps?)``
-Runs a side effect when dependencies change.    
-
-**Parameters**
-- ``callback`` → Effect function (can return cleanup).
-- ``deps`` → Array of state dependencies, or ``null`` for all states.
-
-
 
 ## ``useMemo(factory, deps)``
 Caches computed values and recomputes when dependencies change.
 
 **Parameters**
-- ``factory`` → Function that computes the value.
-- ``deps`` → Array of state dependencies.
+- ``factory``: ``function`` → Function that computes the value.
+- ``deps``: ``array`` → Array of state dependencies.
 
 
 | Method / Prop     | Description                           |
@@ -272,62 +235,16 @@ Caches computed values and recomputes when dependencies change.
 
 
 
-## ``useButton(selectorsOrDOM, options?)``
-Manages button states (``loading``, ``disabled``, ``display``).
+## ``useEffect(callback, deps?)``
+Runs a side effect when dependencies change.    
 
 **Parameters**
-- ``selectorsOrDOM`` → DOM element or CSS selector (supports multiple).
-- ``options`` → Customize button behavior.
-```js
-{
-  state: { 
-    disabled: false,   // boolean
-    loading: false,    // boolean
-    display: true      // boolean
-  },
-  disabled: { 
-    class: "disabled"  // string
-  },
-  loading: {
-    html: "",          // string or fn (callback with detaultButtonText as params)
-    icon: "",          // string
-    class: "loading"   // string
-  },
-  shown: { 
-    class: "show",     // string
-  },
-  hidden: {
-    class: "hidden",   // string
-  },
-}
-```
-**API**
-| Method / Prop                              | Description                                          |
-| ------------------------------------------ | ---------------------------------------------------- |
-| `.value` (getter)                          | Returns `{ disabled, loading, display}`.             |
-| `.dom` (getter)                            | Returns array of DOM Elements.                       |
-| `.disabled(true/false)`                    | Toggles disabled state.                              |
-| `.loading(true/false)`                     | Toggles loading state (also disables while loading). |
-| `.show(true/false)`                        | Removes ``display`` style property.                  |
-| `.hide(true/false)`                        | Toggles ``display:none`` in style property.          |
-| `.watch(cb)`                               | Fires on every `.set()`.                             |
-| `.watchEffect(cb, executeOnMount = false)` | Fires only on state changes.                         |
-
-
+- ``callback``: ``function`` → Effect function (can return cleanup).
+- ``deps``: (``null``|``array``) → Array of state dependencies, or ``null`` for all states.
 
 
 
 ---
-
-
-## 📝 Changelog v2.4.0
-- 🔄 **New Scheduler** → batches state updates to reduce re-renders.
-- 🆕 ``useButton`` **API** → manage button states (loading, disabled).
-- 🆕 ``useMemo`` **API** → memoize computed values with dependency tracking.
-- ⚡ Optimized DOM updates → only updates if value differs.
-- 🛡 Improved error handling for watchers and effects.
-- 🧹 Cleanup support in watchers.
-
 ---
 
 

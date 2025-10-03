@@ -41,7 +41,7 @@
         </div>
 
         <span>
-            <button class="btn btn-primary" onclick="handleBacthUpdate()">Clear State</button>
+            <button class="btn btn-primary" id="clearStateBtn" onclick="handleBacthUpdate()">Clear State</button>
         </span>
     </div>
 
@@ -53,22 +53,32 @@
     const text = useState('ram', '#textInput,#textContent');
     const counter = useState(0);
 
+    const textCounterMemo = useMemo(() => text.value + '-' + counter.value, [text, counter]);
+    console.log('textCounterMemo:', textCounterMemo.value);
+
+    textCounterMemo.watch(v => console.log('textCounterMemo changed:', v.value));
+
     const memo = useMemo(() => {
         console.log('%cuseMemo', 'color:red', 'is running...');
         return text.value + '-' + counter.value;
     }, [text, counter]);
+
 
     function handleBacthUpdate() {
         counter.set(0);
         text.set('');
     }
 
-    memo.watch(v => document.getElementById("memoText").innerHTML = v.value, true);
+    memo.watch(v => {
+        document.getElementById("memoText").innerHTML = v.value;
+        console.log('%cmemo changed:', 'color:green', v.value);
+    }, true);
+
     counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 
     useEffect(() => {
         console.log('%cuseEffect', 'color:yellow', 'is running...');
-    }, [text, counter]);
+    }, [text, counter, memo]);
 
 
 </script>
