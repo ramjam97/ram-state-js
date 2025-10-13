@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 3.0.0  
+Version: 3.1.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -35,7 +35,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v3.0.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v3.1.0/dist/ram-state.min.js"></script>
 ```
 
 
@@ -45,7 +45,7 @@ Use the jsDelivr CDN:
 const { version, useState, useMemo, useEffect } = RamState();
 
 // ramstate version
-console.log(version) // v3.0.0
+console.log(version) // v3.1.0
 ```
 
 
@@ -55,77 +55,87 @@ console.log(version) // v3.0.0
 
 ### 1. ``useState``
 
-#### Example 1: Basic
+#### Example 1: Basic Example
 ```js
 const { useState } = RamState();
 
-const counter = useState(0);
+const name = useState("Ram Jam", "#username");
 
-// update state value
-counter.set(1);
-
-// update state value using function
-counter.set(c => c+1);
-
-// get current state value
-console.log(counter.value); // 2
-
-// watch every set (always fires)
-counter.watch(({ value, hasChange }) => {
-  
-  console.log("Set →", value, "changed:", hasChange);
-  
-  return () => console.log("Clean up"); // cleanup (optional)
-
+name.watchEffect(({ value }) => {
+  console.log("Name changed:", value);
 });
 
-// watch only when value changes
-counter.watchEffect(({ value }) => {
-  
-  console.log("Changed →", value);
-  
-  return () => console.log("Clean up"); // cleanup 
-
-}, true);
+name.watch(({ value }) => {
+  console.log("Name changed:", value);
+});
 ```
 
-
-#### Example 2: Data Binding for regular elements (div, span, p, etc.)
-```js
-const { useState } = RamState();
-
-const counter = useState(0, "#counterText");
-```
-✅ Automatically syncs with DOM if you provide a selector.
+#### Example 2: Checkbox Binding
 ```html
-<span id="counterText"></span>
+<input type="checkbox" id="toggle" />
+<span id="status"></span>
+
+<script>
+    const active = useState(false, "#toggle");
+    active.watchEffect(({ value }) => {
+        document.querySelector("#status").textContent = value ? "Active" : "Inactive";
+    });
+</script>
 ```
 
-
-
-#### Example 3: Data Binding for Input-like elements (input, select, textarea)
-```js
-const { useState } = RamState();
-
-// example of multiple DOM Bindings
-
-// example 1: using string
-const name = useState("John", "#nameInput,.nameText"); 
-
-// example 2: using array of strings
-const name = useState("John", ["#nameInput", '.nameText']);
-
-// example 3: using array of strings and DOM Element
-const name = useState("John", ["#nameInput", document.querySelector('.nameText')]);
-```
-
-✅ Automatically syncs with DOM if you provide a selector.
-
+#### Example 3: Radio Button Binding
 ```html
-<input id="nameInput" type="text" />
-<span class="nameText"></span>
+<label><input type="radio" name="gender" value="male" /> Male</label>
+<label><input type="radio" name="gender" value="female" /> Female</label>
 
+<script>
+    const gender = useState("male", 'input[name="gender"]');
+    gender.watchEffect(({ value }) => console.log("Selected:", value));
+</script>
 ```
+
+#### Example 4: Multiple Select Example
+```html
+<select id="fruits" multiple>
+  <option value="apple">Apple</option>
+  <option value="orange">Orange</option>
+  <option value="banana">Banana</option>
+</select>
+
+<script>
+    const fruits = useState(["apple"], "#fruits");
+    fruits.watchEffect(({ value }) => console.log("Selected fruits:", value));
+</script>
+```
+
+#### Example 5: Render Callback Example
+```html
+<div id="display"></div>
+
+<script>
+    const counter = useState(0, "#display", value => `Count: ${value}`);
+    setInterval(() => counter.set(v => v + 1), 1000);
+</script>
+```
+
+### Watch Callbacks
+#### ``watch(cb)``
+Runs **every time** ``set()`` is called (even if value didn’t change).
+```js
+state.watch(({ value, hasChange }) => {
+  console.log("Set called, value:", value, "changed?", hasChange);
+});
+```
+
+#### ``watchEffect(cb, executeOnMount?)``
+Runs **only when the value changes**.
+```js
+state.watchEffect(({ value }) => {
+  console.log("Value changed to:", value);
+});
+```
+
+---
 
 
 ### 2. ``useMemo``
@@ -187,11 +197,9 @@ useEffect(() => {
 
 
 
-
-
 ## 🔑 API Reference
 
-## `RamState(options?)`
+## `RamState()`
 Creates a new instance.
 ```js
 const { version, useState, useMemo, useEffect } = RamState();
@@ -199,12 +207,14 @@ const { version, useState, useMemo, useEffect } = RamState();
 
 
 
-## `useState(initialValue, selectorsOrDOM?)`
+## `useState(initialValue, selectorsOrDOM?, renderCb?)`
 Creates a reactive state.   
 
 **Parameters**
 - ``initialValue``: ``any`` → Initial state value.
 - ``selectorsOrDOM?``: (``null``|``string``|``array``) → DOM element or CSS selector (supports multiple).
+- ``renderCb?``: (``null``|``function``) → (optional) A render function called when binding non-input elements (like <div>). Receives the latest state value and should return the HTML string or text to display.
+
 
 
 **API**
@@ -216,6 +226,20 @@ Creates a reactive state.
 | `.watch(cb)`                               | Fires on every `.set()` (even if unchanged).                                |
 | `.watchEffect(cb, executeOnMount = false)` | Fires only when value changes. Runs immediately if `executeOnMount = true`. |
 
+
+**Binding Behavior**    
+The state automatically syncs both directions between JS and DOM:   
+**Supported Bindings:**
+| Element                                      | Behavior                                                                      |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| **`<input type="text">`**                    | Updates value both ways.                                                      |
+| **`<input type="checkbox">`**                | Binds boolean value.                                                          |
+| **`<input type="radio">`**                   | Syncs by comparing the radio’s `value` with state’s value.                    |
+| **`<select>`**                               | Supports single and multiple selection (`multiple` attribute).                |
+| **`<textarea>`**                             | Binds text content both ways.                                                 |
+| **Other elements (`<div>`, `<span>`, etc.)** | Automatically updates text via `textContent` or custom via `renderCb(value)`. |
+
+---
 
 
 
@@ -244,7 +268,6 @@ Runs a side effect when dependencies change.
 
 
 
----
 ---
 
 

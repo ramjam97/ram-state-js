@@ -1,6 +1,6 @@
 function RamState() {
 
-    const version = "v3.0.0",   /* Library version */
+    const version = "v3.1.0",   /* Library version */
         allStates = new Set(),  /* Keep track of all states (useState & useButton) */
         scheduleJob = (() => {  /* Group schedule to minimize re-renders */
             let queue = new Set(), flushing = false;
@@ -83,43 +83,50 @@ function RamState() {
         return null; // fallback
     };
 
-
-    // HELPER: sync DOM element with state
-    const syncDomModel = (el, value) => {
-        if (el instanceof HTMLInputElement) {
-            if (el.type === "checkbox") {
-                const checked = Boolean(value);
-                if (el.checked !== checked) el.checked = checked;
-                return;
-            }
-            if (el.type === "radio") {
-                const shouldCheck = el.value === String(value);
-                if (el.checked !== shouldCheck) el.checked = shouldCheck;
-                return;
-            }
-        }
-        if (el instanceof HTMLSelectElement && el.multiple && Array.isArray(value)) {
-            const values = new Set(value.map(String)); // normalize
-            [...el.options].forEach(opt => {
-                const shouldSelect = values.has(opt.value);
-                if (opt.selected !== shouldSelect) {
-                    opt.selected = shouldSelect;
-                }
-            });
-            return;
-        }
-        const newVal = value ?? "";
-        if ("value" in el && el.value !== newVal) el.value = newVal;
-        if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) {
-            if (el.textContent !== newVal) el.textContent = newVal;
-        }
-    };
-
     // API: useState
-    function useState(initialValue, selectorsOrDom = null) {
+    function useState(initialValue, selectorsOrDom = null, renderCb = null) {
+
+        if (renderCb !== null && typeof renderCb !== "function") throw new Error(`[RamState] renderCallback must be a function, got ${typeof renderCb}`);
 
         let data = initialValue;
         const sideEffect = { onSet: [], onChange: [] }, dom = getDomElements(selectorsOrDom);
+
+
+        // HELPER: sync DOM element with state
+        const syncDomModel = (el, value) => {
+            if (el instanceof HTMLInputElement) {
+                if (el.type === "checkbox") {
+                    const checked = Boolean(value);
+                    if (el.checked !== checked) el.checked = checked;
+                    return;
+                }
+                if (el.type === "radio") {
+                    const shouldCheck = el.value === String(value);
+                    if (el.checked !== shouldCheck) el.checked = shouldCheck;
+                    return;
+                }
+            }
+            if (el instanceof HTMLSelectElement && el.multiple && Array.isArray(value)) {
+                const values = new Set(value.map(String)); // normalize
+                [...el.options].forEach(opt => {
+                    const shouldSelect = values.has(opt.value);
+                    if (opt.selected !== shouldSelect) {
+                        opt.selected = shouldSelect;
+                    }
+                });
+                return;
+            }
+            const newVal = value ?? "";
+            if ("value" in el && el.value !== newVal) el.value = newVal;
+            if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) {
+                if (typeof renderCb === "function") {
+                    el.innerHTML = renderCb(data);
+                } else {
+                    if (el.textContent !== newVal) el.textContent = newVal;
+                }
+            }
+        };
+
 
         // HELPER: Bind state to element if found
         dom.forEach(el => {
