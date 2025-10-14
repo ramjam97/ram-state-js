@@ -9,17 +9,21 @@ Author: Ram Jam
 
 ## 📌 Introduction
 
-A **vanilla JavaScript state management library** inspired by React’s ``useState``, ``useEffect``, and ``useMemo`` – but without any framework.
+A **vanilla JavaScript state management library** inspired by React’s ``useState``, ``useEffect``, and ``useMemo`` – but without any framework.   
+
 It helps you manage **stateful data** and **DOM bindings** easily with reactive watchers and side effects.
+
 
 ## 🚀 Features
 
-- ✅ ``useState`` → Create reactive state with DOM binding support.
-- ✅ ``useEffect`` → Run side effects when dependencies change.
-- ✅ ``useMemo`` → Cache computed values with dependency tracking.
-- ✅ Automatic DOM binding for input-like elements (``<input>``, ``<select>``, ``<textarea>``) including regular elements (``<div>``, ``<span>``, ``<p>``, etc.)
-- ✅ Watchers with cleanup support.
-- ✅ Internal scheduler to batch updates (avoids unnecessary re-renders).
+✅ Framework-independent (pure JavaScript)
+- ✅ Reactive states (`useState`)
+- ✅ Derived/computed states (`useMemo`)
+- ✅ Reactive side effects (`useEffect`)
+- ✅ Automatic DOM synchronization (`input`, `checkbox`, `radio`, `select`, `textarea`)
+- ✅ View binding via `{ selector: callback }` map
+- ✅ Watchers and cleanup support
+- ✅ Optimized batched updates using a microtask queue
 
 ---
 
@@ -44,7 +48,6 @@ Use the jsDelivr CDN:
 ```js
 const { version, useState, useMemo, useEffect } = RamState();
 
-// ramstate version
 console.log(version) // v4.0.0
 ```
 
@@ -53,7 +56,8 @@ console.log(version) // v4.0.0
 
 ## 🚀 Usage
 
-### 1. ``useState``
+### 1. `useState(initialValue, model?, view?)`
+Creates a reactive state that can be **bound** to **DOM elements** and **watched** for updates.
 
 #### Example 1: Basic Example
 ```js
@@ -61,13 +65,7 @@ const { useState } = RamState();
 
 const name = useState("Ram Jam", "#username");
 
-name.watchEffect(({ value }) => {
-  console.log("Name changed:", value);
-});
-
-name.watch(({ value }) => {
-  console.log("Name changed:", value);
-});
+name.watchEffect(({ value }) => console.log("Name changed:", value));
 ```
 
 #### Example 2: Checkbox Binding
@@ -76,10 +74,12 @@ name.watch(({ value }) => {
 <span id="status"></span>
 
 <script>
-    const active = useState(false, "#toggle");
-    active.watchEffect(({ value }) => {
-        document.querySelector("#status").textContent = value ? "Active" : "Inactive";
-    });
+  const { useState } = RamState();
+
+  const active = useState(false, "#toggle");
+  active.watchEffect(({ value }) => {
+    document.querySelector("#status").textContent = value ? "Active" : "Inactive";
+  });
 </script>
 ```
 
@@ -89,12 +89,14 @@ name.watch(({ value }) => {
 <label><input type="radio" name="gender" value="female" /> Female</label>
 
 <script>
-    const gender = useState("male", 'input[name="gender"]');
-    gender.watchEffect(({ value }) => console.log("Selected:", value));
+  const { useState } = RamState();
+
+  const gender = useState("male", 'input[name="gender"]');
+  gender.watchEffect(({ value }) => console.log("Selected:", value));
 </script>
 ```
 
-#### Example 4: Multiple Select Example
+#### Example 4: Multiple Select
 ```html
 <select id="fruits" multiple>
   <option value="apple">Apple</option>
@@ -103,42 +105,90 @@ name.watch(({ value }) => {
 </select>
 
 <script>
-    const fruits = useState(["apple"], "#fruits");
-    fruits.watchEffect(({ value }) => console.log("Selected fruits:", value));
+  const { useState } = RamState();
+
+  const fruits = useState(["apple"], "#fruits");
+  fruits.watchEffect(({ value }) => console.log("Selected fruits:", value));
 </script>
 ```
 
-#### Example 5: Render Callback Example
+#### Example 5: View Configuration (DOM Rendering)
 ```html
-<div id="display"></div>
+<div id="counter"></div>
+<div id="mirror"></div>
 
 <script>
-    const counter = useState(0, "#display", value => `Count: ${value}`);
-    setInterval(() => counter.set(v => v + 1), 1000);
+  const { useState } = RamState();
+
+  const counter = useState(0, null, {
+    "#counter": ({ state }) => state,
+    "#mirror": ({ state }) => `Count: ${state}`,
+  });
+
+  setInterval(() => counter.set(v => v + 1), 1000);
 </script>
 ```
 
-### Watch Callbacks
-#### ``watch(cb)``
-Runs **every time** ``set()`` is called (even if value didn’t change).
+### 🧭 Watchers
+**useState** provides two types of local watchers: `.watch()` and `.watchEffect()`, both supporting cleanup functions that automatically run before each re-execution.
+
+#### `.watch(cb)`
+Runs every time `.set()` is called — even if the value didn’t actually change.
+
+- Executes immediately once upon registration `(hasChange = false)`
+- Then runs on every `.set()` call
+- The callback receives:
 ```js
-state.watch(({ value, hasChange }) => {
-  console.log("Set called, value:", value, "changed?", hasChange);
+{ model, value, hasChange }
+```
+- If your callback **returns a function**, that function is treated as a **cleanup**, which will run before the watcher re-executes
+- Does **not** return an unwatch/stop function
+
+**Example:**
+```js
+counter.watch(({ value }) => {
+  console.log('watch counter:', value);
+  return () => console.log('watch clean up value:', value);
 });
 ```
 
-#### ``watchEffect(cb, executeOnMount?)``
-Runs **only when the value changes**.
+#### `.watchEffect(cb, opt?)`
+
+Runs only when the value **actually changes**.  
+Supports `{ immediate: true }` to trigger once right away when registered.
+- Executes only when `state.set()` changes the value `(hasChange = true)`
+- If `opt.immediate` is `true`, runs once on registration
+- The callback receives:
 ```js
-state.watchEffect(({ value }) => {
-  console.log("Value changed to:", value);
-});
+{ model, value }
 ```
+- Supports cleanup functions (returned from callback)
+- Does **not** return an unwatch/stop function
+
+
+**Example:**
+```js
+counter.watchEffect(({ value }) => {
+  console.log('watchEffect counter:', value);
+  return () => console.log('watchEffect clean up value:', value);
+}, { immediate: true });
+```
+
+#### 🧹 Cleanup Behavior
+Both watchers support returning a cleanup function:
+```js
+return () => { /* cleanup logic before next call */ }
+```
+- Cleanup runs **automatically before** the watcher re-runs
+- There’s **no API yet to remove** a watcher — they persist for the lifetime of the state
+- Cleanups make it easy to manage event listeners, timers, or subscriptions within watchers
 
 ---
 
 
-### 2. ``useMemo``
+### 2. `useMemo(factory, deps)`
+Creates a derived/computed state that automatically re-computes when its dependencies change.
+
 ```js
 const { useState, useMemo } = RamState();
 
@@ -147,52 +197,34 @@ const num2 = useState(20);
 
 const sum = useMemo(() => num1.value + num2.value, [num1, num2]);
 
-sum.watch(({ value }) => {
-  console.log("Sum updated:", value);
-});
+sum.watch(({ value }) => console.log("Sum updated:", value));
 
-console.log(sum.value); // 30
-
-num1.set(50); 
-
-// auto recomputes → Sum updated: 70
-console.log(sum.value); // 70
-
+num1.set(50); // → auto recomputes → "Sum updated: 70"
 ```
 
 
-### 3. ``useEffect``
+### 3. `useEffect(cb, deps?)`
+Runs a side effect when specific dependencies change, similar to React’s `useEffect`.   
+If no dependencies are provided, it reacts to **all states**.
 
 ```js
-const { useState, useMemo, useEffect } = RamState();
+const { useState, useEffect } = RamState();
 
 const count = useState(0);
 
-
-// runs once at mount
+// Runs once at mount
 useEffect(() => {
   console.log("Mounted");
 }, []);
 
-// re-run whenever count changes
+// Runs when count changes
 useEffect(() => {
-  
   console.log("Count changed:", count.value);
-  
-  // clean up (optional)
-  return () => console.log('clean up');
-
+  return () => console.log("Clean up previous effect");
 }, [count]);
 
-// run on every state change
-useEffect(() => {
-  
-  console.log("Something changed!");
-  
-  // clean up (optional)
-  return () => console.log('clean up');
-
-});
+// Runs on every state change
+useEffect(() => console.log("Something changed!"));
 ```
 
 
@@ -200,76 +232,92 @@ useEffect(() => {
 ## 🔑 API Reference
 
 ## `RamState()`
-Creates a new instance.
+Initializes the library instance.
 ```js
 const { version, useState, useMemo, useEffect } = RamState();
 ```
 
 
 
-## `useState(initialValue, selectorsOrDOM?, renderCb?)`
-Creates a reactive state.   
+## `useState(initialValue, model?, view?)`
+Creates a new reactive state.
 
-**Parameters**
-- ``initialValue``: ``any`` → Initial state value.
-- ``selectorsOrDOM?``: (``null``|``string``|``array``) → DOM element or CSS selector (supports multiple).
-- ``renderCb?``: (``null``|``function``) → (optional) A render function called when binding non-input elements (like <div>). Receives the latest state value and should return the HTML string or text to display.
-
-
-
-**API**
-| Method / Prop                              | Description                                                                 |
-| ------------------------------------------ | --------------------------------------------------------------------------- |
-| `.value` (getter)                          | Returns current state.                                                      |
-| `.dom` (getter)                            | Returns array of DOM Elements.                                              |
-| `.set(valueOrFn)`                          | Updates state. Accepts value or updater `(prev) => next`.                   |
-| `.watch(cb)`                               | Fires on every `.set()` (even if unchanged).                                |
-| `.watchEffect(cb, executeOnMount = false)` | Fires only when value changes. Runs immediately if `executeOnMount = true`. |
+**Parameters**   
+| Name           | Type                                 | Description                                                         |
+| -------------- | ------------------------------------ | ------------------------------------------------------------------- |
+| `initialValue` | any                                  | Initial value for the state                                         |
+| `model?`       | string / HTMLElement / HTMLElement[] | DOM element(s) or selector(s) to bind the state to                  |
+| `view?`        | object                               | Optional configuration object mapping selectors to render callbacks |
 
 
-**Binding Behavior**    
-The state automatically syncs both directions between JS and DOM:   
-**Supported Bindings:**
-| Element                                      | Behavior                                                                      |
-| -------------------------------------------- | ----------------------------------------------------------------------------- |
-| **`<input type="text">`**                    | Updates value both ways.                                                      |
-| **`<input type="checkbox">`**                | Binds boolean value.                                                          |
-| **`<input type="radio">`**                   | Syncs by comparing the radio’s `value` with state’s value.                    |
-| **`<select>`**                               | Supports single and multiple selection (`multiple` attribute).                |
-| **`<textarea>`**                             | Binds text content both ways.                                                 |
-| **Other elements (`<div>`, `<span>`, etc.)** | Automatically updates text via `textContent` or custom via `renderCb(value)`. |
+**Returns**   
+A reactive state object with the following API:
 
----
+| Property / Method        | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `.value`                 | Get current state value                                                  |
+| `.set(valueOrFn)`        | Update state. Accepts direct value or updater function `(prev) => next`. |
+| `.model`                 | Array of bound DOM elements                                              |
+| `.view`                  | Array of view bindings `{ dom, run }`                                    |
+| `.watch(cb)`             | Run on every `.set()` call (even unchanged).                             |
+| `.watchEffect(cb, opt?)` | Run only when value changes. Supports `{ immediate: true }`.             |
 
+**DOM Binding Behavior**
 
-
-## ``useMemo(factory, deps)``
-Caches computed values and recomputes when dependencies change.
-
-**Parameters**
-- ``factory``: ``function`` → Function that computes the value.
-- ``deps``: ``array`` → Array of state dependencies.
-
-
-| Method / Prop     | Description                           |
-| ----------------- | ------------------------------------- |
-| `.value` (getter) | Returns memoized value.               |
-| `.watch(cb)`      | Subscribes to memoized value updates. |
-
-
-
-
-## ``useEffect(callback, deps?)``
-Runs a side effect when dependencies change.    
-
-**Parameters**
-- ``callback``: ``function`` → Effect function (can return cleanup).
-- ``deps``: (``null``|``array``) → Array of state dependencies, or ``null`` for all states.
-
+| Element Type                             | Behavior                                                 |
+| ---------------------------------------- | -------------------------------------------------------- |
+| `<input type="text">`                    | Two-way binding of text value                            |
+| `<input type="checkbox">`                | Boolean value binding                                    |
+| `<input type="radio">`                   | Syncs by comparing `value` attribute with state          |
+| `<select>`                               | Single or multiple select support                        |
+| `<textarea>`                             | Two-way text binding                                     |
+| Other elements (`<div>`, `<span>`, etc.) | Text or HTML rendered via `view` config or `textContent` |
 
 
 ---
 
+
+## `useMemo(factory, deps)`
+Computes and memoizes a derived value.
+
+| Method       | Description                         |
+| ------------ | ----------------------------------- |
+| `.value`     | Current memoized value              |
+| `.watch(cb)` | Subscribe to computed value changes |
+
+
+---
+
+
+## `useEffect(cb, deps?)`
+Runs side effects with optional cleanup.
+
+| Parameter | Description                                           |
+| --------- | ----------------------------------------------------- |
+| `cb`      | Callback function (can return a cleanup function)     |
+| `deps?`   | Array of state dependencies, or `null` for all states |
+
+---
+
+## ⚡ Performance
+
+RamState batches multiple updates in a **microtask queue**, ensuring efficient DOM updates and reduced layout thrashing.            
+All DOM updates, view renders, and watchers are executed asynchronously using:
+
+```js
+Promise.resolve().then(flush);
+```
+
+## 🧱 Error Handling
+
+All watcher, effect, and render callbacks are executed safely inside a `try/catch` wrapper.   
+Any errors are logged with the prefix:
+
+```text
+[RamState] error:
+```
+
+---
 
 ## 📜 License
 

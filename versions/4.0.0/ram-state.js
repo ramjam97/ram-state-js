@@ -4,7 +4,7 @@
  * Author: Ram Jam
  * GitHub: https://github.com/ramjam97/ram-state-js
  * License: ISC
- * Build Date: 2025-10-14 17:55:57 (Asia/Manila)
+ * Build Date: 2025-10-14 22:29:44 (Asia/Manila)
 */
 function RamState() {
     const libraryName = 'RamState', /* Library Name */
@@ -45,10 +45,25 @@ function RamState() {
             const result = payload !== undefined ? cb(payload) : cb();
             return typeof result === "function" ? result : null;
         } catch (err) {
-            console.error("RamState execution error:", err);
+            msg(err, 'error');
             return null;
         }
     };
+
+    const msg = (msg = null, type = "info") => {
+        if (!msg) return;
+        switch (type) {
+            case 'warn':
+                console.warn(`[${libraryName}] error:`, msg);
+                break;
+            case 'error':
+                console.error(`[${libraryName}] error:`, msg);
+                break;
+            default:
+                console.log(`[${libraryName}] error:`, msg);
+                break;
+        }
+    }
 
     // HELPER: convert to array
     const toArray = x => Array.isArray(x) ? x : [x];
@@ -142,7 +157,7 @@ function RamState() {
                 }
             }
         } else {
-            console.warn(`[${libraryName}] Invalid view configuration type: ${typeof view}`);
+            msg(`Invalid view configuration type: ${typeof view}`, 'warn');
         }
 
         // HELPER: sync DOM from state
@@ -201,11 +216,11 @@ function RamState() {
                 return data;
             },
             watch(cb) {
-                if (typeof cb !== "function") return console.warn("watch callback must be a function");
+                if (typeof cb !== "function") return msg('watch callback must be a function', 'warn');
                 sideEffect.onSet.push({ cb, cleanup: safeExec(cb, getWatchPayload(false)) });
             },
             watchEffect(cb, opt = { immediate: false }) {
-                if (typeof cb !== "function") return console.warn("watchEffect callback must be a function");
+                if (typeof cb !== "function") return msg('watchEffect callback must be a function', 'warn');
                 const watcher = { cb, cleanup: null };
                 if (opt?.immediate) watcher.cleanup = safeExec(cb, getWatchEffectPayload());
                 sideEffect.onChange.push(watcher);
@@ -218,7 +233,7 @@ function RamState() {
     // API: useMemo
     function useMemo(factory, deps = []) {
 
-        if (typeof factory !== "function") return console.warn("useMemo factory must be a function");
+        if (typeof factory !== "function") return msg('useMemo factory must be a function', 'warn');
 
         let memo, sideEffect = [];
 
@@ -246,7 +261,7 @@ function RamState() {
         return {
             get value() { return memo; },
             watch(cb) {
-                if (typeof cb !== "function") return console.warn("watch callback must be a function");
+                if (typeof cb !== "function") return msg("watch callback must be a function", 'warn');
                 sideEffect.push({ cb, cleanup: safeExec(cb, getWatchEffectPayload()) });
             }
         };
@@ -256,7 +271,7 @@ function RamState() {
     // API: global watcher
     function useEffect(cb, deps = null) {
 
-        if (typeof cb !== "function") return console.warn("useEffect callback must be a function");
+        if (typeof cb !== "function") return msg("useEffect callback must be a function", 'warn');
 
         let cleanup;
         function effect() { safeExec(cleanup); cleanup = safeExec(cb); }
@@ -271,11 +286,12 @@ function RamState() {
 
     } // useEffect() end
 
-    // console.log(`%c${libraryName}`, 'color:cyan', version, 'initialized 🚀');
+    console.log(`%c${libraryName}`, 'color:cyan', version, 'initialized 🚀');
+
     return {
         version,
         useState,
         useMemo,
         useEffect,
     };
-};
+}

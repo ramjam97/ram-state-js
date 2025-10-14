@@ -39,26 +39,6 @@
         '#sampleInput': ({ state, el }) => el.value = `Counter value: ${state}`,
     });
 
-    console.log(counter);
-
-    counter.watch(({ value }) => {
-        console.log('watch counter:', value);
-        return () => console.log('watch clean up value:', value);
-    });
-
-    counter.watchEffect(({ value }) => {
-        console.log('watchEffect counter:', value);
-        return () => console.log('watchEffect clean up value:', value);
-    });
-
-    useEffect(() => {
-        console.log('Counter Change:', counter.value);
-    }, [counter]);
-
-    useEffect(() => {
-        console.log('Something Change');
-    });
-
 </script>
 
 </html>
