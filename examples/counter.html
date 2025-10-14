@@ -18,12 +18,13 @@
         <div class="d-flex flex-column justify-content-center align-items-center">
             <h5 class="counter-text"></h5>
             <span>
-                <button class="btn btn-danger" onclick="counter.set(v => v - 1)">-</button>
+                <button class="btn btn-danger" onclick="counter.set(v => --v)">-</button>
                 <button class="btn btn-secondary" onclick="counter.set(0)">Reset</button>
-                <button class="btn btn-primary" onclick="counter.set(v => v + 1)">+</button>
+                <button class="btn btn-primary" onclick="counter.set(v => ++v)">+</button>
             </span>
             <span>
                 <input type="number" class="form-control mt-3" id="counter" placeholder="enter number">
+                <input type="text" id="sampleInput" class="form-control form-control-sm">
             </span>
             <span class="counter2"></span>
         </div>
@@ -33,11 +34,29 @@
 
     const { useState, useEffect } = RamState();
 
-    const counter = useState(0, '.counter-text, .counter2, #counter', value => `Counter: ${value}`);
+    const counter = useState(0, '#counter', {
+        '.counter-text,.counter2': ({ state, el }) => el.innerHTML = `Counter: ${state}`,
+        '#sampleInput': ({ state, el }) => el.value = `Counter value: ${state}`,
+    });
+
+    console.log(counter);
 
     counter.watch(({ value }) => {
-        console.log('value:', value);
-        return () => console.log('clean up value:', value);
+        console.log('watch counter:', value);
+        return () => console.log('watch clean up value:', value);
+    });
+
+    counter.watchEffect(({ value }) => {
+        console.log('watchEffect counter:', value);
+        return () => console.log('watchEffect clean up value:', value);
+    });
+
+    useEffect(() => {
+        console.log('Counter Change:', counter.value);
+    }, [counter]);
+
+    useEffect(() => {
+        console.log('Something Change');
     });
 
 </script>

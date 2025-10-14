@@ -72,7 +72,7 @@
     memo.watch(v => {
         document.getElementById("memoText").innerHTML = v.value;
         console.log('%cmemo changed:', 'color:green', v.value);
-    }, true);
+    });
 
     counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 

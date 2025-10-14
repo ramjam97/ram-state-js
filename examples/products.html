@@ -102,7 +102,7 @@
 
     products.watchEffect(() => {
         totalFetch.set(products.value.length);
-    }, true);
+    }, { immediate: true });
 
     let categotyChangeTimeout = null;
     useEffect(() => {
@@ -150,7 +150,7 @@
 
     message.watchEffect(({ value }) => {
         document.getElementById('message').style.display = value ? 'block' : 'none';
-    }, true);
+    }, { immediate: true });
 
     useEffect(() => {
 
@@ -168,7 +168,7 @@
                     ${item.name}
                 </option>`)
         ].join('');
-    }, true);
+    }, { immediate: true });
 
     useEffect(() => {
         fetch(`https://dummyjson.com/products/categories`)

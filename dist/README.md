@@ -1,7 +1,7 @@
 
 # RamStateJs
 
-Version: 3.1.0  
+Version: 4.0.0  
 GitHub: https://github.com/ramjam97/ram-state-js  
 Author: Ram Jam
 
@@ -35,7 +35,7 @@ Download the minified file and include it in your project:
 Use the jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v3.1.0/dist/ram-state.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ramjam97/ram-state-js@v4.0.0/dist/ram-state.min.js"></script>
 ```
 
 
@@ -45,7 +45,7 @@ Use the jsDelivr CDN:
 const { version, useState, useMemo, useEffect } = RamState();
 
 // ramstate version
-console.log(version) // v3.1.0
+console.log(version) // v4.0.0
 ```
 
 
