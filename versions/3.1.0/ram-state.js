@@ -1,8 +1,16 @@
+/*!
+ * RamStateJs v3.1.0
+ * Description: A vanilla JavaScript state management library inspired by React’s useState, useEffect, and useMemo – but without any framework. It helps you manage stateful data and DOM bindings easily with reactive watchers and side effects.
+ * Author: Ram Jam
+ * GitHub: https://github.com/ramjam97/ram-state-js
+ * License: ISC
+ * Build Date: 2025-10-13 13:17:57 (Asia/Manila)
+*/
 function RamState() {
-    const libraryName = 'RamState', /* Library Name */
-        version = "v4.0.0",         /* Library version */
-        allStates = new Set(),      /* Keep track of all states (useState & useButton) */
-        scheduleJob = (() => {      /* Group schedule to minimize re-renders */
+
+    const version = "v3.1.0",   /* Library version */
+        allStates = new Set(),  /* Keep track of all states (useState & useButton) */
+        scheduleJob = (() => {  /* Group schedule to minimize re-renders */
             let queue = new Set(), flushing = false;
             const flush = () => {
                 queue.forEach(fn => fn());
@@ -37,25 +45,10 @@ function RamState() {
             const result = payload !== undefined ? cb(payload) : cb();
             return typeof result === "function" ? result : null;
         } catch (err) {
-            msg(err, 'error');
+            console.error("RamState execution error:", err);
             return null;
         }
     };
-
-    const msg = (msg = null, type = "info") => {
-        if (!msg) return;
-        switch (type) {
-            case 'warn':
-                console.warn(`[${libraryName}] error:`, msg);
-                break;
-            case 'error':
-                console.error(`[${libraryName}] error:`, msg);
-                break;
-            default:
-                console.log(`[${libraryName}] error:`, msg);
-                break;
-        }
-    }
 
     // HELPER: convert to array
     const toArray = x => Array.isArray(x) ? x : [x];
@@ -98,123 +91,97 @@ function RamState() {
         return null; // fallback
     };
 
-
-    // HELPER: sync DOM element with state
-    const syncDomElement = (el, value) => {
-        if (el === null) return;
-        if (el instanceof HTMLInputElement) {
-            if (el.type === "checkbox") {
-                const checked = Boolean(value);
-                if (el.checked !== checked) el.checked = checked;
-                return;
-            }
-            if (el.type === "radio") {
-                const shouldCheck = el.value === String(value);
-                if (el.checked !== shouldCheck) el.checked = shouldCheck;
-                return;
-            }
-        }
-        if (el instanceof HTMLSelectElement && el.multiple && Array.isArray(value)) {
-            const values = new Set(value.map(String)); // normalize
-            [...el.options].forEach(opt => {
-                const shouldSelect = values.has(opt.value);
-                if (opt.selected !== shouldSelect) {
-                    opt.selected = shouldSelect;
-                }
-            });
-            return;
-        }
-        const newVal = value ?? "";
-        if ("value" in el && el.value !== newVal) el.value = newVal;
-        if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) {
-            if (el.textContent !== newVal) el.textContent = newVal;
-        }
-    };
-
     // API: useState
-    function useState(initialValue, model = null, view = {}) {
+    function useState(initialValue, selectorsOrDom = null, renderCb = null) {
+
+        if (renderCb !== null && typeof renderCb !== "function") throw new Error(`[RamState] renderCallback must be a function, got ${typeof renderCb}`);
 
         let data = initialValue;
-        const sideEffect = { onSet: [], onChange: [] },
-            domModel = getDomElements(model),
-            viewConfig = [];
+        const sideEffect = { onSet: [], onChange: [] }, dom = getDomElements(selectorsOrDom);
 
-        if (view instanceof Object && !Array.isArray(view)) {
-            for (const [selector, callback] of Object.entries(view)) {
-                for (const el of getDomElements(selector)) {
-                    viewConfig.push({
-                        dom: el,
-                        run: () => safeExec(callback, { state: data, el })
-                    });
+
+        // HELPER: sync DOM element with state
+        const syncDomModel = (el, value) => {
+            if (el instanceof HTMLInputElement) {
+                if (el.type === "checkbox") {
+                    const checked = Boolean(value);
+                    if (el.checked !== checked) el.checked = checked;
+                    return;
+                }
+                if (el.type === "radio") {
+                    const shouldCheck = el.value === String(value);
+                    if (el.checked !== shouldCheck) el.checked = shouldCheck;
+                    return;
                 }
             }
-        } else {
-            msg(`Invalid view configuration type: ${typeof view}`, 'warn');
-        }
+            if (el instanceof HTMLSelectElement && el.multiple && Array.isArray(value)) {
+                const values = new Set(value.map(String)); // normalize
+                [...el.options].forEach(opt => {
+                    const shouldSelect = values.has(opt.value);
+                    if (opt.selected !== shouldSelect) {
+                        opt.selected = shouldSelect;
+                    }
+                });
+                return;
+            }
+            const newVal = value ?? "";
+            if ("value" in el && el.value !== newVal) el.value = newVal;
+            if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) {
+                if (typeof renderCb === "function") {
+                    el.innerHTML = renderCb(data);
+                } else {
+                    if (el.textContent !== newVal) el.textContent = newVal;
+                }
+            }
+        };
 
-        // HELPER: sync DOM from state
-        const syncModel = () => domModel.forEach(el => scheduleJob(() => syncDomElement(el, data)));
-        const syncViewModel = () => viewConfig.forEach(item => scheduleJob(item.run));
 
         // HELPER: Bind state to element if found
-        syncModel();
-        syncViewModel();
-
-        // HELPER: Bind DOM events
-        domModel.forEach(el => {
-            const handler = () => scheduleJob(() => stateAPI.set(extractDomValue(el)));
-            if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-                el.addEventListener('input', handler);
-                el.addEventListener('change', handler);
-            } else if (el instanceof HTMLSelectElement) {
-                el.addEventListener('change', handler);
-            }
+        dom.forEach(el => {
+            syncDomModel(el, data); // initialize DOM from state
+            ['input', 'change'].forEach(evt => el.addEventListener(evt, () => stateAPI.set(extractDomValue(el))));
         });
 
         // HELPER: Generate watch parameters
-        const getWatchPayload = hasChange => ({ model: domModel, value: data, hasChange });
+        const getWatchData = hasChange => ({ dom, value: data, hasChange });
 
         // HELPER: Generate watch effects parameters
-        const getWatchEffectPayload = () => ({ model: domModel, value: data });
+        const getWatchEffectData = () => ({ dom, value: data });
 
         const stateAPI = {
-            model: domModel,
-            view: viewConfig,
+            dom,
             get value() { return data; },
             set(value) {
                 if (typeof value === "function") value = value(data);
-
                 const hasChange = !isEqual(data, value);
                 data = value;
+
+                // State → DOM
+                dom.forEach(el => syncDomModel(el, data));
 
                 // local watchers (onSet)
                 sideEffect.onSet.forEach(w => {
                     safeExec(w.cleanup);
-                    w.cleanup = safeExec(w.cb, getWatchPayload(hasChange));
+                    w.cleanup = safeExec(w.cb, getWatchData(hasChange));
                 });
 
                 // local watchers (onChange only if value changed)
                 if (hasChange) {
-
-                    // State → DOM
-                    syncModel();
-                    syncViewModel();
-
                     sideEffect.onChange.forEach(w => {
                         safeExec(w.cleanup);
-                        w.cleanup = safeExec(w.cb, getWatchEffectPayload());
+                        w.cleanup = safeExec(w.cb, getWatchEffectData());
                     });
                 }
                 return data;
             },
             watch(cb) {
-                if (typeof cb !== "function") return msg('watch callback must be a function', 'warn');
-                sideEffect.onSet.push({ cb, cleanup: safeExec(cb, getWatchPayload(false)) });
+                if (typeof cb !== "function") return console.warn("watch callback must be a function");
+                sideEffect.onSet.push({ cb, cleanup: safeExec(cb, getWatchData(false)) });
             },
-            watchEffect(cb, opt = { immediate: false }) {
-                if (typeof cb !== "function") return msg('watchEffect callback must be a function', 'warn');
+            watchEffect(cb, executeOnMount = false) {
+                if (typeof cb !== "function") return console.warn("watchEffect callback must be a function");
                 const watcher = { cb, cleanup: null };
-                if (opt?.immediate) watcher.cleanup = safeExec(cb, getWatchEffectPayload());
+                if (executeOnMount) watcher.cleanup = safeExec(cb, getWatchEffectData());
                 sideEffect.onChange.push(watcher);
             }
         };
@@ -225,19 +192,19 @@ function RamState() {
     // API: useMemo
     function useMemo(factory, deps = []) {
 
-        if (typeof factory !== "function") return msg('useMemo factory must be a function', 'warn');
+        if (typeof factory !== "function") return console.warn("useMemo factory must be a function");
 
         let memo, sideEffect = [];
 
         // HELPER: Generate watch effects parameters
-        const getWatchEffectPayload = () => ({ value: memo });
+        const getWatchEffectData = () => ({ value: memo });
 
         function compute() {
             memo = factory();
             // local watchers
             sideEffect.forEach(w => {
                 safeExec(w.cleanup);
-                w.cleanup = safeExec(w.cb, getWatchEffectPayload());
+                w.cleanup = safeExec(w.cb, getWatchEffectData());
             });
             return memo;
         }
@@ -253,8 +220,8 @@ function RamState() {
         return {
             get value() { return memo; },
             watch(cb) {
-                if (typeof cb !== "function") return msg("watch callback must be a function", 'warn');
-                sideEffect.push({ cb, cleanup: safeExec(cb, getWatchEffectPayload()) });
+                if (typeof cb !== "function") return console.warn("watch callback must be a function");
+                sideEffect.push({ cb, cleanup: safeExec(cb, getWatchEffectData()) });
             }
         };
 
@@ -263,13 +230,14 @@ function RamState() {
     // API: global watcher
     function useEffect(cb, deps = null) {
 
-        if (typeof cb !== "function") return msg("useEffect callback must be a function", 'warn');
+        if (typeof cb !== "function") return console.warn("useEffect callback must be a function");
 
         let cleanup;
+
         function effect() { safeExec(cleanup); cleanup = safeExec(cb); }
 
         // attach watchers to deps or all states if deps is undefined
-        toArray(deps === null ? [...allStates] : deps).forEach(dep => {
+        toArray(deps === null ? allStates : deps).forEach(dep => {
             const fn = () => scheduleJob(effect);
             (typeof dep.watchEffect === "function" ? dep.watchEffect : dep.watch)?.(fn);
         });
@@ -277,9 +245,7 @@ function RamState() {
         effect(); // deps is empty array or on-mount
 
     } // useEffect() end
-
-    console.log(`%c${libraryName}`, 'color:cyan', version, 'initialized 🚀');
-
+    console.log('%cRamState', 'color:cyan', version, 'initialized 🚀');
     return {
         version,
         useState,

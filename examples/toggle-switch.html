@@ -30,7 +30,7 @@
     </div>
 </body>
 <script>
-    const { useState, useEffect } = RamState();
+    const { useState } = RamState();
 
     const switchState = useState(false);
 
@@ -41,14 +41,14 @@
     // 1st watchEffect
     switchState.watchEffect(v => {
         document.getElementById("switchLabel").innerHTML = v.value ? 'ON' : 'OFF';
-    }, true);
+    }, { immediate: true });
 
     // 2nd watchEffect
     switchState.watchEffect(v => {
         document.getElementById("swithBtn").innerHTML = v.value ? 'On' : 'Off';
         document.getElementById("swithBtn").classList.add(v.value ? 'btn-primary' : 'btn-danger');
         document.getElementById("swithBtn").classList.remove(v.value ? 'btn-danger' : 'btn-primary');
-    }, true);
+    }, { immediate: true });
 
 </script>
 

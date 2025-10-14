@@ -31,7 +31,7 @@
         <br>
         <div class="col-md-6 d-flex flex-column gap-2">
             <h5>Memo: <span id="memoText"></span></h5>
-            <input type="text" class="form-control" id="text" placeholder="type here">
+            <input type="text" class="form-control" id="textInput" placeholder="type here">
             <h5>Text: <span id="textContent"></span></h5>
         </div>
         <div class="btn-group">
@@ -41,7 +41,7 @@
         </div>
 
         <span>
-            <button class="btn btn-primary" onclick="handleBacthUpdate()">Clear State</button>
+            <button class="btn btn-primary" id="clearStateBtn" onclick="handleBacthUpdate()">Clear State</button>
         </span>
     </div>
 
@@ -50,26 +50,35 @@
 
 <script>
 
-    const text = useState('ram', '#text');
+    const text = useState('ram', '#textInput,#textContent');
     const counter = useState(0);
+
+    const textCounterMemo = useMemo(() => text.value + '-' + counter.value, [text, counter]);
+    console.log('textCounterMemo:', textCounterMemo.value);
+
+    textCounterMemo.watch(v => console.log('textCounterMemo changed:', v.value));
 
     const memo = useMemo(() => {
         console.log('%cuseMemo', 'color:red', 'is running...');
-        return text.value;
+        return text.value + '-' + counter.value;
     }, [text, counter]);
+
 
     function handleBacthUpdate() {
         counter.set(0);
         text.set('');
     }
 
-    memo.watch(v => document.getElementById("memoText").innerHTML = v.value, true);
-    text.watchEffect(v => document.getElementById("textContent").innerHTML = v.value, true);
+    memo.watch(v => {
+        document.getElementById("memoText").innerHTML = v.value;
+        console.log('%cmemo changed:', 'color:green', v.value);
+    });
+
     counter.watchEffect((cntx) => document.getElementById("countText").innerHTML = cntx.value, true);
 
     useEffect(() => {
         console.log('%cuseEffect', 'color:yellow', 'is running...');
-    }, [text, counter]);
+    }, [text, counter, memo]);
 
 
 </script>
