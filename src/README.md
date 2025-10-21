@@ -1,3 +1,5 @@
+[![Hits](https://hits.sh/github.com/ramjam97/ram-state-js.svg)](https://hits.sh/github.com/ramjam97/ram-state-js/)
+
 
 # RamStateJs
 
